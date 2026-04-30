@@ -1,22 +1,30 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+import axios from "axios";
 
-async function fetchAPI<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`);
-  return res.json() as Promise<T>;
-}
+export const apiClient = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
+  headers: { "Content-Type": "application/json" },
+});
+
+apiClient.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const message =
+      err.response?.data?.detail ?? err.message ?? "Unknown error";
+    return Promise.reject(new Error(message));
+  }
+);
 
 export const api = {
-  health: () => fetchAPI<{ status: string; service: string }>("/api/health"),
+  health: () =>
+    apiClient
+      .get<{ status: string; service: string }>("/api/health")
+      .then((r) => r.data),
   prices: {
-    list: () => fetchAPI<{ prices: unknown[] }>("/api/prices/"),
+    list: () =>
+      apiClient.get<{ prices: unknown[] }>("/api/prices/").then((r) => r.data),
     track: (url: string, targetPrice?: number) =>
-      fetchAPI("/api/prices/track", {
-        method: "POST",
-        body: JSON.stringify({ url, target_price: targetPrice }),
-      }),
+      apiClient
+        .post("/api/prices/track", { url, target_price: targetPrice })
+        .then((r) => r.data),
   },
 };
