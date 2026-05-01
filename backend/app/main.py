@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import health, prices
+from app.routers import health, prices, products
 
 app = FastAPI(
     title="PriceWise AI API",
@@ -18,3 +18,4 @@ app.add_middleware(
 
 app.include_router(health.router, prefix="/api", tags=["health"])
 app.include_router(prices.router, prefix="/api/prices", tags=["prices"])
+app.include_router(products.router, prefix="/api/products", tags=["products"])
