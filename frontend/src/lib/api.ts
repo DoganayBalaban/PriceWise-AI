@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { ProductResponse } from "@/types/product";
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
@@ -25,6 +26,16 @@ export const api = {
     track: (url: string, targetPrice?: number) =>
       apiClient
         .post("/api/prices/track", { url, target_price: targetPrice })
+        .then((r) => r.data),
+  },
+  products: {
+    submit: (url: string) =>
+      apiClient
+        .post<ProductResponse>("/api/products/", { url })
+        .then((r) => r.data),
+    getById: (id: string) =>
+      apiClient
+        .get<ProductResponse>(`/api/products/${id}`)
         .then((r) => r.data),
   },
 };

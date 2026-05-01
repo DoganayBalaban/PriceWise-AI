@@ -1,6 +1,8 @@
+import { UrlForm } from "@/components/url-form";
+
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+    <main className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 text-white">
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 text-blue-400 text-sm mb-8">
@@ -18,19 +20,7 @@ export default function Home() {
             trends, and alert you at the perfect moment to buy.
           </p>
 
-          <form className="flex gap-3 max-w-xl mx-auto">
-            <input
-              type="url"
-              placeholder="Paste product URL here..."
-              className="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-500 transition-colors px-6 py-3 rounded-lg font-semibold"
-            >
-              Track Price
-            </button>
-          </form>
+          <UrlForm />
 
           <div className="mt-20 grid grid-cols-3 gap-8 text-left">
             {features.map((f) => (
