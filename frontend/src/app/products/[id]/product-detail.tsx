@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useProduct, useDeleteProduct, useRefreshProduct } from "@/hooks/use-products";
+import { AlertButton } from "@/components/alert-button";
 import { ForecastCard } from "@/components/forecast-card";
 import { PriceChart } from "@/components/price-chart";
 import { ProductCard } from "@/components/product-card";
@@ -77,6 +78,10 @@ export function ProductDetail({ id }: ProductDetailProps) {
           ← Yeni ürün takip et
         </Link>
         <div className="flex gap-2">
+          <AlertButton
+            productId={id}
+            currentPrice={data.latest_price.price}
+          />
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}

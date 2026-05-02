@@ -4,6 +4,9 @@ export const queryKeys = {
     all: ["products"] as const,
     byId: (id: string) => ["products", id] as const,
   },
+  alerts: {
+    byEmail: (email: string) => ["alerts", email] as const,
+  },
   prices: {
     history: (productId: string, days: number) =>
       ["prices", productId, "history", days] as const,
