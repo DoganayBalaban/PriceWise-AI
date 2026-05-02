@@ -9,5 +9,7 @@ export const queryKeys = {
       ["prices", productId, "history", days] as const,
     stats: (productId: string, days: number) =>
       ["prices", productId, "stats", days] as const,
+    forecast: (productId: string, days: number) =>
+      ["prices", productId, "forecast", days] as const,
   },
 };

@@ -1,11 +1,16 @@
 import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.cache import get_cached_forecast, set_cached_forecast
 from app.core.database import get_db
+from app.core.redis import get_redis
 from app.repositories.product_repository import ProductRepository
+from app.schemas.prices import ForecastResponse
 from app.schemas.product import PriceHistoryEntry, PriceStatsResponse
+from app.services.forecast_service import ForecastService
 
 router = APIRouter()
 
@@ -64,13 +69,32 @@ async def get_price_stats(
     )
 
 
-@router.get("/{product_id}/forecast")
-async def get_price_forecast(product_id: str) -> dict:
-    return {
-        "message": "Price forecast coming soon (requires ML pipeline)",
-        "product_id": product_id,
-        "forecast": [],
-    }
+@router.get("/{product_id}/forecast", response_model=ForecastResponse)
+async def get_price_forecast(
+    product_id: str,
+    days: int = Query(default=30, ge=7, le=30),
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
+) -> ForecastResponse:
+    pid = _parse_uuid(product_id)
+    repo = ProductRepository(db)
+    product = await repo.get_by_id(pid)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    cached = await get_cached_forecast(redis, product_id, days)
+    if cached:
+        return ForecastResponse(**cached)
+
+    history = await repo.get_price_history(pid, days=90)
+    if not history:
+        raise HTTPException(status_code=422, detail="Tahmin için yeterli fiyat verisi yok")
+
+    service = ForecastService()
+    result = service.forecast(product_id=product_id, history=history, forecast_days=days)
+
+    await set_cached_forecast(redis, product_id, days, result.model_dump(mode="json"))
+    return result
 
 
 @router.get("/{product_id}/compare")

@@ -38,3 +38,18 @@ async def acquire_scrape_lock(redis: Redis, url: str) -> bool:
 
 async def release_scrape_lock(redis: Redis, url: str) -> None:
     await redis.delete(_scrape_lock_key(url))
+
+
+def _forecast_cache_key(product_id: str, days: int) -> str:
+    return f"forecast:cache:{product_id}:{days}"
+
+
+async def get_cached_forecast(redis: Redis, product_id: str, days: int) -> dict | None:
+    raw = await redis.get(_forecast_cache_key(product_id, days))
+    if raw is None:
+        return None
+    return json.loads(raw)
+
+
+async def set_cached_forecast(redis: Redis, product_id: str, days: int, data: dict) -> None:
+    await redis.set(_forecast_cache_key(product_id, days), json.dumps(data), ex=21600)

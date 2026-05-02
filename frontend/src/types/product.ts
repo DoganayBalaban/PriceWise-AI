@@ -40,3 +40,20 @@ export interface PriceStatsResponse {
   stddev_price: number | null;
   data_points: number;
 }
+
+export interface ForecastPoint {
+  date: string;
+  predicted_price: number;
+}
+
+export interface ForecastResponse {
+  product_id: string;
+  forecast_days: number;
+  forecast: ForecastPoint[];
+  current_price: number;
+  predicted_final_price: number;
+  mae: number;
+  low_confidence: boolean;
+  recommendation: "AL" | "BEKLE" | "TAKIPTE KAL";
+  data_points: number;
+}

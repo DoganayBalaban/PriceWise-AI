@@ -1,5 +1,6 @@
 import axios from "axios";
 import type {
+  ForecastResponse,
   PriceHistoryEntry,
   PriceStatsResponse,
   ProductListResponse,
@@ -55,6 +56,12 @@ export const api = {
     getStats: (productId: string, days = 30) =>
       apiClient
         .get<PriceStatsResponse>(`/api/prices/${productId}/stats`, {
+          params: { days },
+        })
+        .then((r) => r.data),
+    getForecast: (productId: string, days = 30) =>
+      apiClient
+        .get<ForecastResponse>(`/api/prices/${productId}/forecast`, {
           params: { days },
         })
         .then((r) => r.data),
