@@ -1,4 +1,5 @@
 import { UrlForm } from "@/components/url-form";
+import { TrackedProducts } from "@/components/tracked-products";
 
 export default function Home() {
   return (
@@ -21,6 +22,8 @@ export default function Home() {
           </p>
 
           <UrlForm />
+
+          <TrackedProducts />
 
           <div className="mt-20 grid grid-cols-3 gap-8 text-left">
             {features.map((f) => (
