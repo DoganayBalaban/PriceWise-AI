@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useProduct, useDeleteProduct, useRefreshProduct } from "@/hooks/use-products";
-import { ProductCard } from "@/components/product-card";
+import { ForecastCard } from "@/components/forecast-card";
 import { PriceChart } from "@/components/price-chart";
+import { ProductCard } from "@/components/product-card";
 
 interface ProductDetailProps {
   id: string;
@@ -124,6 +125,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
       </div>
       <ProductCard product={data} />
       <PriceChart productId={id} />
+      <ForecastCard productId={id} />
     </div>
   );
 }
