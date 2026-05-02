@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_S3_BUCKET: str = "pricewise-artifacts"
 
+    # Email
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "PriceWise AI <alerts@pricewise.ai>"
+
+    # App
+    APP_URL: str = "http://localhost:3000"
+
     # Scraper
     PLAYWRIGHT_HEADLESS: bool = True
 
