@@ -7,6 +7,7 @@ from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
     from app.models.price_history import PriceHistory
+    from app.models.review import Review
 
 
 class Product(UUIDMixin, TimestampMixin, Base):
@@ -24,4 +25,10 @@ class Product(UUIDMixin, TimestampMixin, Base):
         back_populates="product",
         cascade="all, delete-orphan",
         order_by="PriceHistory.scraped_at.desc()",
+    )
+
+    reviews: Mapped[list["Review"]] = relationship(
+        "Review",
+        back_populates="product",
+        cascade="all, delete-orphan",
     )

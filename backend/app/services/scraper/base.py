@@ -37,17 +37,21 @@ class BaseScraper:
     def __init__(self, headless: bool = True) -> None:
         self.headless = headless
 
+    # Max believable single-product price in TRY
+    _MAX_PRICE = 500_000.0
+
     def _parse_price(self, text: str) -> float | None:
         # Turkish locale: "1.425 TL" or "1.299,99 TL" → float
         cleaned = re.sub(r"[^\d,.]", "", text).replace(".", "").replace(",", ".")
-        # Handle case where no comma existed (integer price like "1425")
         if cleaned.count(".") > 1:
-            # Multiple dots means thousands separators were already stripped — keep as-is
             cleaned = cleaned.replace(".", "")
         try:
-            return float(cleaned) if cleaned else None
+            value = float(cleaned) if cleaned else None
         except ValueError:
             return None
+        if value is None or value <= 0 or value > self._MAX_PRICE:
+            return None
+        return value
 
     async def _first_text(self, page: Page, selectors: list[str]) -> str:
         for sel in selectors:
