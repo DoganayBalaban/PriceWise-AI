@@ -1,11 +1,24 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from app.core.redis import close_redis, get_redis
 from app.routers import health, prices, products
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await get_redis()  # warm up connection pool
+    yield
+    await close_redis()
+
 
 app = FastAPI(
     title="PriceWise AI API",
     description="AI-powered price tracking and comparison API",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(

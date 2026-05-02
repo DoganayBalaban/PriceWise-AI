@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,7 +90,7 @@ class ProductRepository:
     async def get_price_history(
         self, product_id: uuid.UUID, days: int
     ) -> list[PriceHistory]:
-        since = datetime.now(timezone.utc) - timedelta(days=days)
+        since = datetime.utcnow() - timedelta(days=days)
         result = await self.session.execute(
             select(PriceHistory)
             .where(
@@ -102,7 +102,7 @@ class ProductRepository:
         return list(result.scalars().all())
 
     async def get_price_stats(self, product_id: uuid.UUID, days: int) -> dict:
-        since = datetime.now(timezone.utc) - timedelta(days=days)
+        since = datetime.utcnow() - timedelta(days=days)
         row = await self.session.execute(
             select(
                 func.min(PriceHistory.price).label("min_price"),
