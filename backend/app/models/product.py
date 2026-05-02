@@ -6,6 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin, UUIDMixin
 
 if TYPE_CHECKING:
+    from app.models.alert import Alert
     from app.models.price_history import PriceHistory
     from app.models.review import Review
 
@@ -29,6 +30,12 @@ class Product(UUIDMixin, TimestampMixin, Base):
 
     reviews: Mapped[list["Review"]] = relationship(
         "Review",
+        back_populates="product",
+        cascade="all, delete-orphan",
+    )
+
+    alerts: Mapped[list["Alert"]] = relationship(
+        "Alert",
         back_populates="product",
         cascade="all, delete-orphan",
     )

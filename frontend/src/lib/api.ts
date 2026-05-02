@@ -1,5 +1,10 @@
 import axios from "axios";
 import type {
+  AlertCreateRequest,
+  AlertResponse,
+  AlertUpdateRequest,
+} from "@/types/alert";
+import type {
   ForecastResponse,
   PriceHistoryEntry,
   PriceStatsResponse,
@@ -65,5 +70,19 @@ export const api = {
           params: { days },
         })
         .then((r) => r.data),
+  },
+  alerts: {
+    list: (email: string) =>
+      apiClient
+        .get<AlertResponse[]>("/api/alerts/", { params: { email } })
+        .then((r) => r.data),
+    create: (data: AlertCreateRequest) =>
+      apiClient.post<AlertResponse>("/api/alerts/", data).then((r) => r.data),
+    update: (id: string, data: AlertUpdateRequest) =>
+      apiClient.put<AlertResponse>(`/api/alerts/${id}`, data).then((r) => r.data),
+    delete: (id: string) =>
+      apiClient.delete(`/api/alerts/${id}`).then((r) => r.data),
+    test: (id: string) =>
+      apiClient.post<{ sent: boolean; to: string }>(`/api/alerts/test/${id}`).then((r) => r.data),
   },
 };

@@ -22,5 +22,10 @@ class User(UUIDMixin, Base):
         "AnalysisHistory", back_populates="user"
     )
 
+    alerts: Mapped[list["Alert"]] = relationship(
+        "Alert", back_populates="user", cascade="all, delete-orphan"
+    )
+
 
 from app.models.analysis_history import AnalysisHistory  # noqa: E402, F401
+from app.models.alert import Alert  # noqa: E402, F401

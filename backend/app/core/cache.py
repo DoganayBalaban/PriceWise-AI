@@ -53,3 +53,15 @@ async def get_cached_forecast(redis: Redis, product_id: str, days: int) -> dict 
 
 async def set_cached_forecast(redis: Redis, product_id: str, days: int, data: dict) -> None:
     await redis.set(_forecast_cache_key(product_id, days), json.dumps(data), ex=21600)
+
+
+def _alert_sent_key(alert_id: str) -> str:
+    return f"alert:sent:{alert_id}"
+
+
+async def is_alert_sent(redis: Redis, alert_id: str) -> bool:
+    return await redis.exists(_alert_sent_key(alert_id)) == 1
+
+
+async def mark_alert_sent(redis: Redis, alert_id: str) -> None:
+    await redis.set(_alert_sent_key(alert_id), "1", ex=86400)
