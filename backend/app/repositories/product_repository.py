@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.price_history import PriceHistory
@@ -23,6 +24,12 @@ class ProductRepository:
         )
         return result.scalar_one_or_none()
 
+    async def list_all(self) -> list[Product]:
+        result = await self.session.execute(
+            select(Product).order_by(Product.created_at.desc())
+        )
+        return list(result.scalars().all())
+
     async def create(
         self,
         url: str,
@@ -43,6 +50,14 @@ class ProductRepository:
         self.session.add(product)
         await self.session.flush()
         return product
+
+    async def delete(self, product_id: uuid.UUID) -> bool:
+        product = await self.get_by_id(product_id)
+        if product is None:
+            return False
+        await self.session.delete(product)
+        await self.session.flush()
+        return True
 
     async def add_price_history(
         self,
@@ -71,3 +86,33 @@ class ProductRepository:
             .limit(1)
         )
         return result.scalar_one_or_none()
+
+    async def get_price_history(
+        self, product_id: uuid.UUID, days: int
+    ) -> list[PriceHistory]:
+        since = datetime.now(timezone.utc) - timedelta(days=days)
+        result = await self.session.execute(
+            select(PriceHistory)
+            .where(
+                PriceHistory.product_id == product_id,
+                PriceHistory.scraped_at >= since,
+            )
+            .order_by(PriceHistory.scraped_at.asc())
+        )
+        return list(result.scalars().all())
+
+    async def get_price_stats(self, product_id: uuid.UUID, days: int) -> dict:
+        since = datetime.now(timezone.utc) - timedelta(days=days)
+        row = await self.session.execute(
+            select(
+                func.min(PriceHistory.price).label("min_price"),
+                func.max(PriceHistory.price).label("max_price"),
+                func.avg(PriceHistory.price).label("avg_price"),
+                func.stddev_pop(PriceHistory.price).label("stddev_price"),
+                func.count(PriceHistory.id).label("data_points"),
+            ).where(
+                PriceHistory.product_id == product_id,
+                PriceHistory.scraped_at >= since,
+            )
+        )
+        return row.mappings().one()
