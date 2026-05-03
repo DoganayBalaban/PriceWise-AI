@@ -1,7 +1,7 @@
 import uuid
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.review import Review
@@ -31,6 +31,14 @@ class ReviewRepository:
                 Review.product_id == product_id,
                 Review.pinecone_id.is_(None),
             )
+        )
+        return list(result.scalars().all())
+
+    async def list_products_with_min_reviews(self, min_count: int) -> list[uuid.UUID]:
+        result = await self.session.execute(
+            select(Review.product_id)
+            .group_by(Review.product_id)
+            .having(func.count(Review.id) >= min_count)
         )
         return list(result.scalars().all())
 
