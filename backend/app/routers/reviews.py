@@ -8,11 +8,13 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.redis import get_redis
 from app.core.security import get_current_user
 from app.models.user import User
 from app.repositories.review_repository import ReviewRepository
 from app.repositories.product_repository import ProductRepository
 from app.services.embedding_service import query_similar_chunks
+from app.services.review_summary_service import ReviewSummaryError, get_or_generate_summary
 
 router = APIRouter()
 
@@ -53,6 +55,22 @@ async def get_reviews(
             for r in reviews[:20]  # preview only
         ],
     }
+
+
+@router.get("/{product_id}/summary")
+async def get_review_summary(
+    product_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    pid = _parse_uuid(product_id)
+    redis = await get_redis()
+    try:
+        return await get_or_generate_summary(pid, redis, db)
+    except ReviewSummaryError as exc:
+        if "insufficient_reviews" in str(exc):
+            raise HTTPException(status_code=422, detail="Bu ürün için en az 10 yorum gerekli.")
+        raise HTTPException(status_code=503, detail="Özet oluşturulamadı, lütfen tekrar deneyin.")
 
 
 @router.post("/{product_id}/ask")
