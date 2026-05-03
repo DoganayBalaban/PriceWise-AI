@@ -1,3 +1,5 @@
+import uuid
+
 from redis.asyncio import Redis
 
 from app.core.cache import acquire_scrape_lock, release_scrape_lock
@@ -20,7 +22,7 @@ class ProductService:
         self.redis = redis
 
     async def get_or_create_product(
-        self, raw_url: str
+        self, raw_url: str, user_id: uuid.UUID
     ) -> tuple[Product, PriceHistory]:
         url = normalize_url(raw_url)
         platform = detect_platform(url)
@@ -29,8 +31,8 @@ class ProductService:
         if existing:
             latest = await self.repo.get_latest_price(existing.id)
             if latest is None:
-                await self._scrape_and_record(existing.id, url, platform)
-                latest = await self.repo.get_latest_price(existing.id)
+                latest = await self._scrape_and_record(existing.id, url, platform)
+            await self.repo.link_to_user(existing.id, user_id)
             return existing, latest
 
         locked = await acquire_scrape_lock(self.redis, url)
@@ -57,10 +59,11 @@ class ProductService:
         finally:
             await release_scrape_lock(self.redis, url)
 
+        await self.repo.link_to_user(product.id, user_id)
         return product, price
 
     async def _scrape_and_record(
-        self, product_id, url: str, platform: str
+        self, product_id: uuid.UUID, url: str, platform: str
     ) -> PriceHistory:
         scraped = await self.scraper.scrape(url, platform)
         return await self.repo.add_price_history(

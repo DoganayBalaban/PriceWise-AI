@@ -5,11 +5,10 @@ import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import type { AlertCreateRequest, AlertUpdateRequest } from "@/types/alert";
 
-export function useAlerts(email: string) {
+export function useAlerts() {
   return useQuery({
-    queryKey: queryKeys.alerts.byEmail(email),
-    queryFn: () => api.alerts.list(email),
-    enabled: !!email,
+    queryKey: queryKeys.alerts.all,
+    queryFn: () => api.alerts.list(),
     staleTime: 60_000,
   });
 }
@@ -18,12 +17,8 @@ export function useCreateAlert() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: AlertCreateRequest) => api.alerts.create(data),
-    onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: ["alerts"],
-      });
-      // Invalidate by product too if needed later
-      void variables;
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["alerts"] });
     },
   });
 }

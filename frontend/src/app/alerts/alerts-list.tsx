@@ -1,12 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAlerts, useDeleteAlert, useUpdateAlert, useTestAlert } from "@/hooks/use-alerts";
 import type { AlertResponse } from "@/types/alert";
-
-const STORAGE_KEY = "pw_alert_email";
 
 const fmt = new Intl.NumberFormat("tr-TR", {
   style: "currency",
@@ -95,36 +92,12 @@ function AlertRow({ alert }: { alert: AlertResponse }) {
 }
 
 export function AlertsList() {
-  const [email, setEmail] = useState("");
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) setEmail(saved);
-  }, []);
-
-  const { data: alerts, isLoading } = useAlerts(email);
-
-  if (!email) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-slate-400 mb-2">Alarmlarını görmek için</p>
-        <p className="text-slate-500 text-sm">
-          Önce bir ürün sayfasından alarm kur — e-posta otomatik kaydedilir.
-        </p>
-        <Link href="/" className="mt-6 inline-block text-blue-400 hover:text-blue-300 text-sm transition-colors">
-          ← Ana sayfaya dön
-        </Link>
-      </div>
-    );
-  }
+  const { data: alerts, isLoading } = useAlerts();
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Fiyat Alarmlarım</h1>
-          <p className="text-sm text-slate-400 mt-1">{email}</p>
-        </div>
+        <h1 className="text-2xl font-bold text-white">Fiyat Alarmlarım</h1>
         <Link
           href="/"
           className="text-sm text-slate-400 hover:text-white transition-colors"
@@ -141,7 +114,7 @@ export function AlertsList() {
         </div>
       )}
 
-      {!isLoading && alerts?.length === 0 && (
+      {!isLoading && (!alerts || alerts.length === 0) && (
         <div className="text-center py-12 text-slate-500">
           Henüz alarm kurulmamış.
         </div>

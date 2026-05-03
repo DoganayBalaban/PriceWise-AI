@@ -17,6 +17,25 @@ export const apiClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Attach JWT from Better Auth's /token endpoint before each request
+apiClient.interceptors.request.use(async (config) => {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/api/auth/token`,
+      { credentials: "include" }
+    );
+    if (res.ok) {
+      const data = (await res.json()) as { token?: string };
+      if (data.token) {
+        config.headers.Authorization = `Bearer ${data.token}`;
+      }
+    }
+  } catch {
+    // No session — request proceeds without auth header
+  }
+  return config;
+});
+
 apiClient.interceptors.response.use(
   (res) => res,
   (err) => {
@@ -72,9 +91,9 @@ export const api = {
         .then((r) => r.data),
   },
   alerts: {
-    list: (email: string) =>
+    list: () =>
       apiClient
-        .get<AlertResponse[]>("/api/alerts/", { params: { email } })
+        .get<AlertResponse[]>("/api/alerts/")
         .then((r) => r.data),
     create: (data: AlertCreateRequest) =>
       apiClient.post<AlertResponse>("/api/alerts/", data).then((r) => r.data),

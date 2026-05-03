@@ -9,7 +9,6 @@ export interface AlertResponse {
 
 export interface AlertCreateRequest {
   product_id: string;
-  email: string;
   target_price: number;
 }
 

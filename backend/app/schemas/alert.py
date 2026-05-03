@@ -2,12 +2,11 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 
 class AlertCreateRequest(BaseModel):
     product_id: uuid.UUID
-    email: EmailStr
     target_price: Decimal
 
 

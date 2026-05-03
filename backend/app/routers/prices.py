@@ -7,6 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.cache import get_cached_forecast, set_cached_forecast
 from app.core.database import get_db
 from app.core.redis import get_redis
+from app.core.security import get_current_user
+from app.models.user import User
 from app.repositories.product_repository import ProductRepository
 from app.schemas.prices import ForecastResponse
 from app.schemas.product import PriceHistoryEntry, PriceStatsResponse
@@ -27,6 +29,7 @@ async def get_price_history(
     product_id: str,
     days: int = Query(default=30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> list[PriceHistoryEntry]:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
@@ -51,6 +54,7 @@ async def get_price_stats(
     product_id: str,
     days: int = Query(default=30, ge=1, le=365),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> PriceStatsResponse:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
@@ -75,6 +79,7 @@ async def get_price_forecast(
     days: int = Query(default=30, ge=7, le=30),
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> ForecastResponse:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
@@ -98,7 +103,10 @@ async def get_price_forecast(
 
 
 @router.get("/{product_id}/compare")
-async def compare_prices(product_id: str) -> dict:
+async def compare_prices(
+    product_id: str,
+    current_user: User = Depends(get_current_user),
+) -> dict:
     return {
         "message": "Price comparison coming soon",
         "product_id": product_id,
@@ -107,7 +115,10 @@ async def compare_prices(product_id: str) -> dict:
 
 
 @router.get("/{product_id}/decision")
-async def get_buy_decision(product_id: str) -> dict:
+async def get_buy_decision(
+    product_id: str,
+    current_user: User = Depends(get_current_user),
+) -> dict:
     return {
         "message": "Buy/wait decision coming soon (requires AI integration)",
         "product_id": product_id,
