@@ -11,6 +11,8 @@ from app.core.cache import (
 )
 from app.core.database import get_db
 from app.core.redis import get_redis
+from app.core.security import get_current_user
+from app.models.user import User
 from app.repositories.product_repository import ProductRepository
 from app.schemas.product import (
     PriceDataResponse,
@@ -66,11 +68,12 @@ async def submit_product(
     body: ProductSubmitRequest,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> ProductResponse:
     repo = ProductRepository(db)
     service = ProductService(repo, ScraperService(), redis)
     try:
-        product, price = await service.get_or_create_product(str(body.url))
+        product, price = await service.get_or_create_product(str(body.url), current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except RuntimeError as e:
@@ -86,9 +89,10 @@ async def submit_product(
 async def list_products(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> ProductListResponse:
     repo = ProductRepository(db)
-    products = await repo.list_all()
+    products = await repo.list_by_user(current_user.id)
     items = []
     for product in products:
         cached = await get_cached_price(redis, str(product.id))
@@ -119,12 +123,16 @@ async def get_product(
     product_id: str,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> ProductResponse:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
     product = await repo.get_by_id(pid)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    if not await repo.is_tracked_by_user(pid, current_user.id):
+        raise HTTPException(status_code=403, detail="Bu ürün takip listenizde değil")
 
     cached = await get_cached_price(redis, product_id)
     if cached:
@@ -153,12 +161,13 @@ async def delete_product(
     product_id: str,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
-    deleted = await repo.delete(pid)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Product not found")
+    removed = await repo.unlink_from_user(pid, current_user.id)
+    if not removed:
+        raise HTTPException(status_code=404, detail="Ürün takip listenizde bulunamadı")
     await invalidate_price_cache(redis, product_id)
 
 
@@ -167,12 +176,16 @@ async def refresh_product(
     product_id: str,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
+    current_user: User = Depends(get_current_user),
 ) -> ProductResponse:
     pid = _parse_uuid(product_id)
     repo = ProductRepository(db)
     product = await repo.get_by_id(pid)
     if product is None:
         raise HTTPException(status_code=404, detail="Product not found")
+
+    if not await repo.is_tracked_by_user(pid, current_user.id):
+        raise HTTPException(status_code=403, detail="Bu ürün takip listenizde değil")
 
     scraper = ScraperService()
     try:
@@ -192,5 +205,8 @@ async def refresh_product(
 
 
 @router.get("/{product_id}/similar")
-async def get_similar_products(product_id: str) -> dict:
+async def get_similar_products(
+    product_id: str,
+    current_user: User = Depends(get_current_user),
+) -> dict:
     return {"message": "Similar products coming soon", "products": []}

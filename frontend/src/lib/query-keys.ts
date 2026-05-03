@@ -5,7 +5,7 @@ export const queryKeys = {
     byId: (id: string) => ["products", id] as const,
   },
   alerts: {
-    byEmail: (email: string) => ["alerts", email] as const,
+    all: ["alerts"] as const,
   },
   prices: {
     history: (productId: string, days: number) =>

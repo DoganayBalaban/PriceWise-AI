@@ -1,5 +1,4 @@
-import { UrlForm } from "@/components/url-form";
-import { TrackedProducts } from "@/components/tracked-products";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -21,11 +20,22 @@ export default function Home() {
             trends, and alert you at the perfect moment to buy.
           </p>
 
-          <UrlForm />
+          <div className="flex items-center justify-center gap-4 mb-20">
+            <Link
+              href="/register"
+              className="bg-blue-600 hover:bg-blue-500 transition-colors px-8 py-3 rounded-lg font-semibold text-white"
+            >
+              Ücretsiz Başla
+            </Link>
+            <Link
+              href="/login"
+              className="bg-slate-700/50 hover:bg-slate-700 transition-colors px-8 py-3 rounded-lg font-semibold text-white border border-slate-600"
+            >
+              Giriş Yap
+            </Link>
+          </div>
 
-          <TrackedProducts />
-
-          <div className="mt-20 grid grid-cols-3 gap-8 text-left">
+          <div className="grid grid-cols-3 gap-8 text-left">
             {features.map((f) => (
               <div
                 key={f.title}
@@ -46,20 +56,20 @@ export default function Home() {
 const features = [
   {
     icon: "📉",
-    title: "Price Drop Alerts",
+    title: "Fiyat Düşüş Alarmları",
     description:
-      "Get notified the moment a product hits your target price across any retailer.",
+      "Ürün hedef fiyatına ulaştığı anda anında bildirim al.",
   },
   {
     icon: "🤖",
-    title: "AI Predictions",
+    title: "AI Tahminleri",
     description:
-      "Our model analyzes historical data to predict the best time to buy.",
+      "Geçmiş verileri analiz ederek en iyi alım zamanını tahmin eder.",
   },
   {
     icon: "🔍",
-    title: "Multi-retailer",
+    title: "Çoklu Platform",
     description:
-      "Compare prices across hundreds of stores simultaneously in real time.",
+      "Trendyol ve Hepsiburada fiyatlarını tek yerden karşılaştır.",
   },
 ];

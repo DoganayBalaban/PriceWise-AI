@@ -7,10 +7,7 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useCreateAlert } from "@/hooks/use-alerts";
 
-const STORAGE_KEY = "pw_alert_email";
-
 const schema = z.object({
-  email: z.string().email("Geçerli bir e-posta girin"),
   target_price: z.number({ error: "Geçerli bir fiyat girin" }).positive("Geçerli bir fiyat girin"),
 });
 
@@ -25,9 +22,6 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
   const [open, setOpen] = useState(false);
   const { mutate: createAlert, isPending } = useCreateAlert();
 
-  const savedEmail =
-    typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) ?? "" : "";
-
   const {
     register,
     handleSubmit,
@@ -35,17 +29,12 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { email: savedEmail, target_price: Math.floor(currentPrice * 0.9) },
+    defaultValues: { target_price: Math.floor(currentPrice * 0.9) },
   });
 
   function onSubmit(values: FormValues) {
-    localStorage.setItem(STORAGE_KEY, values.email);
     createAlert(
-      {
-        product_id: productId,
-        email: values.email,
-        target_price: values.target_price,
-      },
+      { product_id: productId, target_price: values.target_price },
       {
         onSuccess: () => {
           toast.success("Alarm kuruldu! Fiyat düşünce e-posta alacaksın.");
@@ -96,19 +85,6 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div>
-                <label className="block text-xs text-slate-400 mb-1.5">E-posta</label>
-                <input
-                  {...register("email")}
-                  type="email"
-                  placeholder="ornek@mail.com"
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                {errors.email && (
-                  <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>
-                )}
-              </div>
-
               <div>
                 <label className="block text-xs text-slate-400 mb-1.5">
                   Hedef Fiyat (₺)

@@ -1,11 +1,12 @@
 import uuid
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.price_history import PriceHistory
 from app.models.product import Product
+from app.models.user_product import UserProduct
 
 
 class ProductRepository:
@@ -24,11 +25,39 @@ class ProductRepository:
         )
         return result.scalar_one_or_none()
 
-    async def list_all(self) -> list[Product]:
+    async def list_by_user(self, user_id: uuid.UUID) -> list[Product]:
         result = await self.session.execute(
-            select(Product).order_by(Product.created_at.desc())
+            select(Product)
+            .join(UserProduct, UserProduct.product_id == Product.id)
+            .where(UserProduct.user_id == user_id)
+            .order_by(UserProduct.added_at.desc())
         )
         return list(result.scalars().all())
+
+    async def is_tracked_by_user(self, product_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        result = await self.session.execute(
+            select(UserProduct).where(
+                UserProduct.product_id == product_id,
+                UserProduct.user_id == user_id,
+            )
+        )
+        return result.scalar_one_or_none() is not None
+
+    async def link_to_user(self, product_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        already = await self.is_tracked_by_user(product_id, user_id)
+        if not already:
+            self.session.add(UserProduct(user_id=user_id, product_id=product_id))
+            await self.session.flush()
+
+    async def unlink_from_user(self, product_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+        result = await self.session.execute(
+            delete(UserProduct).where(
+                UserProduct.product_id == product_id,
+                UserProduct.user_id == user_id,
+            )
+        )
+        await self.session.flush()
+        return result.rowcount > 0
 
     async def create(
         self,
@@ -50,14 +79,6 @@ class ProductRepository:
         self.session.add(product)
         await self.session.flush()
         return product
-
-    async def delete(self, product_id: uuid.UUID) -> bool:
-        product = await self.get_by_id(product_id)
-        if product is None:
-            return False
-        await self.session.delete(product)
-        await self.session.flush()
-        return True
 
     async def add_price_history(
         self,

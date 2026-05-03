@@ -16,8 +16,9 @@ class AlertRepository:
         product_id: uuid.UUID,
         email: str,
         target_price: Decimal,
+        user_id: uuid.UUID | None = None,
     ) -> Alert:
-        alert = Alert(product_id=product_id, email=email, target_price=target_price)
+        alert = Alert(product_id=product_id, email=email, target_price=target_price, user_id=user_id)
         self.session.add(alert)
         await self.session.flush()
         return alert

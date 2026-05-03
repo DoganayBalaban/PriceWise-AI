@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.alert import Alert
     from app.models.price_history import PriceHistory
     from app.models.review import Review
+    from app.models.user_product import UserProduct
 
 
 class Product(UUIDMixin, TimestampMixin, Base):
@@ -36,6 +37,12 @@ class Product(UUIDMixin, TimestampMixin, Base):
 
     alerts: Mapped[list["Alert"]] = relationship(
         "Alert",
+        back_populates="product",
+        cascade="all, delete-orphan",
+    )
+
+    tracked_by: Mapped[list["UserProduct"]] = relationship(
+        "UserProduct",
         back_populates="product",
         cascade="all, delete-orphan",
     )

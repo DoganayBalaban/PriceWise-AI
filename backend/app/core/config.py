@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     BETTER_AUTH_SECRET: str = ""
     GOOGLE_CLIENT_ID: str = ""
     GOOGLE_CLIENT_SECRET: str = ""
+    JWT_ALGORITHM: str = "HS256"
 
     # Payment
     LEMON_SQUEEZY_API_KEY: str = ""

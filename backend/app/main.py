@@ -5,8 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.redis import close_redis, get_redis
-from app.routers import health, prices, products
-from app.routers import alerts
+from app.routers import alerts, auth, health, prices, products
 from app.services.alert_service import check_price_alerts
 
 
@@ -37,6 +36,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api", tags=["health"])
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(prices.router, prefix="/api/prices", tags=["prices"])
 app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
