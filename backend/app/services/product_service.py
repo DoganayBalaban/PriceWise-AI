@@ -10,6 +10,10 @@ from app.repositories.product_repository import ProductRepository
 from app.services.scraper import ScraperService
 
 
+class ScrapeConflictError(Exception):
+    pass
+
+
 class ProductService:
     def __init__(
         self,
@@ -37,7 +41,7 @@ class ProductService:
 
         locked = await acquire_scrape_lock(self.redis, url)
         if not locked:
-            raise RuntimeError("Bu URL için scraping zaten devam ediyor, lütfen bekleyin")
+            raise ScrapeConflictError("Bu URL için scraping zaten devam ediyor, lütfen bekleyin")
 
         try:
             scraped = await self.scraper.scrape(url, platform)

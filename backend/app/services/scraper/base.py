@@ -1,5 +1,6 @@
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import date
 from typing import Protocol
 
 from playwright.async_api import Page, TimeoutError as PlaywrightTimeout
@@ -10,6 +11,14 @@ _USER_AGENT = (
     "AppleWebKit/537.36 (KHTML, like Gecko) "
     "Chrome/124.0.0.0 Safari/537.36"
 )
+
+
+@dataclass
+class ScrapedReview:
+    content: str
+    rating: int | None = None
+    review_date: date | None = None
+    verified: bool = False
 
 
 @dataclass
@@ -128,5 +137,10 @@ class BaseScraper:
                 await browser.close()
 
 
+    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]:
+        raise NotImplementedError
+
+
 class BaseScraperProtocol(Protocol):
     async def scrape(self, url: str) -> ScrapedProduct: ...
+    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]: ...
