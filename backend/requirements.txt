@@ -16,3 +16,7 @@ apscheduler>=3.10
 resend>=2.0
 email-validator>=2.0
 PyJWT>=2.8
+openai>=1.30
+pinecone>=3.0
+langchain-text-splitters>=0.3
+tiktoken>=0.7

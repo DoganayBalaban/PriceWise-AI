@@ -90,6 +90,12 @@ export const api = {
         })
         .then((r) => r.data),
   },
+  reviews: {
+    getStatus: (productId: string) =>
+      apiClient
+        .get<{ total: number; embedded: number; rag_ready: boolean }>(`/api/reviews/${productId}`)
+        .then((r) => r.data),
+  },
   alerts: {
     list: () =>
       apiClient

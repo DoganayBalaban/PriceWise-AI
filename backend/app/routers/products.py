@@ -1,8 +1,11 @@
 import uuid
+import logging
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
+
+logger = logging.getLogger(__name__)
 
 from app.core.cache import (
     get_cached_price,
@@ -20,8 +23,9 @@ from app.schemas.product import (
     ProductResponse,
     ProductSubmitRequest,
 )
-from app.services.product_service import ProductService
+from app.services.product_service import ProductService, ScrapeConflictError
 from app.services.scraper import ScraperService
+from app.services.review_service import scrape_and_save_reviews
 
 router = APIRouter()
 
@@ -66,6 +70,7 @@ def _parse_uuid(product_id: str) -> uuid.UUID:
 @router.post("/", response_model=ProductResponse, status_code=201)
 async def submit_product(
     body: ProductSubmitRequest,
+    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
     current_user: User = Depends(get_current_user),
@@ -76,12 +81,21 @@ async def submit_product(
         product, price = await service.get_or_create_product(str(body.url), current_user.id)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except RuntimeError as e:
+    except ScrapeConflictError as e:
         raise HTTPException(status_code=409, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Scraping failed: {e}")
 
     await set_cached_price(redis, str(product.id), _price_dict(price))
+
+    # Scrape reviews in background — don't block the response
+    background_tasks.add_task(
+        scrape_and_save_reviews,
+        product_id=product.id,
+        url=product.url,
+        platform=product.platform,
+    )
+
     return _build_response(product, price)
 
 
