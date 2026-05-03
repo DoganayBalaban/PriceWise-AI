@@ -55,6 +55,21 @@ async def set_cached_forecast(redis: Redis, product_id: str, days: int, data: di
     await redis.set(_forecast_cache_key(product_id, days), json.dumps(data), ex=21600)
 
 
+def _summary_cache_key(product_id: str) -> str:
+    return f"analysis:summary:{product_id}"
+
+
+async def get_cached_summary(redis: Redis, product_id: str) -> dict | None:
+    raw = await redis.get(_summary_cache_key(product_id))
+    if raw is None:
+        return None
+    return json.loads(raw)
+
+
+async def set_cached_summary(redis: Redis, product_id: str, data: dict) -> None:
+    await redis.set(_summary_cache_key(product_id), json.dumps(data), ex=86400)
+
+
 def _alert_sent_key(alert_id: str) -> str:
     return f"alert:sent:{alert_id}"
 

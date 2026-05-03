@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.redis import close_redis, get_redis
 from app.routers import alerts, auth, health, prices, products, reviews
 from app.services.alert_service import check_price_alerts
+from app.services.review_summary_service import refresh_all_summaries
 
 
 @asynccontextmanager
@@ -14,6 +15,7 @@ async def lifespan(app: FastAPI):
     await get_redis()
     scheduler = AsyncIOScheduler()
     scheduler.add_job(check_price_alerts, "interval", minutes=15, id="price_alert_check")
+    scheduler.add_job(refresh_all_summaries, "interval", hours=24, id="review_summary_refresh")
     scheduler.start()
     yield
     scheduler.shutdown()
