@@ -11,7 +11,7 @@ import type {
   ProductListResponse,
   ProductResponse,
 } from "@/types/product";
-import type { ReviewSummaryResponse } from "@/types/review";
+import type { ReviewSummaryResponse, SentimentResponse } from "@/types/review";
 
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000",
@@ -99,6 +99,10 @@ export const api = {
     getSummary: (productId: string) =>
       apiClient
         .get<ReviewSummaryResponse>(`/api/reviews/${productId}/summary`)
+        .then((r) => r.data),
+    getSentiment: (productId: string) =>
+      apiClient
+        .get<SentimentResponse>(`/api/reviews/${productId}/sentiment`)
         .then((r) => r.data),
   },
   alerts: {
