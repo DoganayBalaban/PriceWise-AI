@@ -15,6 +15,7 @@ from app.repositories.review_repository import ReviewRepository
 from app.repositories.product_repository import ProductRepository
 from app.services.embedding_service import query_similar_chunks
 from app.services.review_summary_service import ReviewSummaryError, get_or_generate_summary
+from app.services.sentiment_service import SentimentNotReadyError, get_or_compute_sentiment
 
 router = APIRouter()
 
@@ -55,6 +56,23 @@ async def get_reviews(
             for r in reviews[:20]  # preview only
         ],
     }
+
+
+@router.get("/{product_id}/sentiment")
+async def get_sentiment(
+    product_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    pid = _parse_uuid(product_id)
+    redis = await get_redis()
+    try:
+        return await get_or_compute_sentiment(pid, redis)
+    except SentimentNotReadyError:
+        raise HTTPException(
+            status_code=422,
+            detail="Sentiment analizi henüz hazır değil. Yorumlar analiz ediliyor.",
+        )
 
 
 @router.get("/{product_id}/summary")

@@ -51,6 +51,15 @@ async def scrape_and_save_reviews(
     # Embed newly saved reviews
     await embed_pending_reviews(product_id, platform)
 
+    # Analyze sentiment for newly saved reviews
+    from app.services.sentiment_service import analyze_reviews_for_product, compute_and_cache_sentiment
+    try:
+        classified = await analyze_reviews_for_product(product_id)
+        if classified > 0:
+            await compute_and_cache_sentiment(product_id)
+    except Exception as exc:
+        logger.warning("Sentiment analysis failed for %s: %s", product_id, exc)
+
 
 async def embed_pending_reviews(product_id: uuid.UUID, platform: str) -> None:
     """Embed all reviews for a product that haven't been sent to Pinecone yet."""

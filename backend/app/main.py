@@ -8,6 +8,7 @@ from app.core.redis import close_redis, get_redis
 from app.routers import alerts, auth, health, prices, products, reviews
 from app.services.alert_service import check_price_alerts
 from app.services.review_summary_service import refresh_all_summaries
+from app.services.sentiment_service import refresh_all_sentiments
 
 
 @asynccontextmanager
@@ -16,6 +17,7 @@ async def lifespan(app: FastAPI):
     scheduler = AsyncIOScheduler()
     scheduler.add_job(check_price_alerts, "interval", minutes=15, id="price_alert_check")
     scheduler.add_job(refresh_all_summaries, "interval", hours=24, id="review_summary_refresh")
+    scheduler.add_job(refresh_all_sentiments, "interval", hours=24, id="sentiment_refresh")
     scheduler.start()
     yield
     scheduler.shutdown()
