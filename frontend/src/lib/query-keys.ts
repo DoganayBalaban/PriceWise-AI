@@ -1,4 +1,8 @@
 export const queryKeys = {
+  agent: {
+    sessions: ["agent", "sessions"] as const,
+    session: (id: string) => ["agent", "sessions", id] as const,
+  },
   health: ["health"] as const,
   products: {
     all: ["products"] as const,
