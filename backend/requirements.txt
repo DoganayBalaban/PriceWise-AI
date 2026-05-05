@@ -22,3 +22,4 @@ langchain-text-splitters>=0.3
 tiktoken>=0.7
 transformers>=4.40
 torch>=2.2
+langgraph>=0.2

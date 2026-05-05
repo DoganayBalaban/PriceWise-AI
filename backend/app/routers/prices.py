@@ -112,15 +112,3 @@ async def compare_prices(
         "product_id": product_id,
         "comparisons": [],
     }
-
-
-@router.get("/{product_id}/decision")
-async def get_buy_decision(
-    product_id: str,
-    current_user: User = Depends(get_current_user),
-) -> dict:
-    return {
-        "message": "Buy/wait decision coming soon (requires AI integration)",
-        "product_id": product_id,
-        "recommendation": None,
-    }
