@@ -9,6 +9,7 @@ import { ForecastCard } from "@/components/forecast-card";
 import { PriceChart } from "@/components/price-chart";
 import { ProductCard } from "@/components/product-card";
 import { ReviewChat } from "@/components/review-chat";
+import { SentimentCard } from "@/components/sentiment-card";
 import { SummaryCard } from "@/components/summary-card";
 
 interface ProductDetailProps {
@@ -132,6 +133,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
       </div>
       <ProductCard product={data} />
       <PriceChart productId={id} />
+      <SentimentCard productId={id} />
       <ForecastCard productId={id} />
       <SummaryCard productId={id} />
       <ReviewChat productId={id} />

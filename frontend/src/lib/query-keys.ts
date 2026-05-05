@@ -10,6 +10,7 @@ export const queryKeys = {
   reviews: {
     status: (productId: string) => ["reviews", productId, "status"] as const,
     summary: (productId: string) => ["reviews", productId, "summary"] as const,
+    sentiment: (productId: string) => ["reviews", productId, "sentiment"] as const,
   },
   prices: {
     history: (productId: string, days: number) =>
