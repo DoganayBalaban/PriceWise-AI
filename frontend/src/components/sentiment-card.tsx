@@ -141,9 +141,9 @@ export function SentimentCard({ productId }: SentimentCardProps) {
                       borderRadius: 8,
                     }}
                     labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-                    formatter={(v: number) => [`${v}/100`, "Skor"]}
-                    labelFormatter={(v: string) =>
-                      new Date(v).toLocaleDateString("tr-TR", {
+                    formatter={(v) => [`${v}/100`, "Skor"]}
+                    labelFormatter={(v) =>
+                      new Date(String(v)).toLocaleDateString("tr-TR", {
                         day: "numeric",
                         month: "long",
                       })

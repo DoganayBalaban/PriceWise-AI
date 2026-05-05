@@ -95,3 +95,22 @@ async def is_alert_sent(redis: Redis, alert_id: str) -> bool:
 
 async def mark_alert_sent(redis: Redis, alert_id: str) -> None:
     await redis.set(_alert_sent_key(alert_id), "1", ex=86400)
+
+
+def _agent_decision_cache_key(product_id: str) -> str:
+    return f"agent:decision:{product_id}"
+
+
+async def get_cached_agent_decision(redis: Redis, product_id: str) -> dict | None:
+    raw = await redis.get(_agent_decision_cache_key(product_id))
+    if raw is None:
+        return None
+    return json.loads(raw)
+
+
+async def set_cached_agent_decision(redis: Redis, product_id: str, data: dict) -> None:
+    await redis.set(_agent_decision_cache_key(product_id), json.dumps(data), ex=21600)  # 6h
+
+
+async def invalidate_agent_decision_cache(redis: Redis, product_id: str) -> None:
+    await redis.delete(_agent_decision_cache_key(product_id))

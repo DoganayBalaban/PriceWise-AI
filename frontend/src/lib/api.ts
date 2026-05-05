@@ -11,6 +11,7 @@ import type {
   ProductListResponse,
   ProductResponse,
 } from "@/types/product";
+import type { AgentSession } from "@/types/agent";
 import type { ReviewSummaryResponse, SentimentResponse } from "@/types/review";
 
 export const apiClient = axios.create({
@@ -104,6 +105,18 @@ export const api = {
       apiClient
         .get<SentimentResponse>(`/api/reviews/${productId}/sentiment`)
         .then((r) => r.data),
+  },
+  agent: {
+    getSessions: (page = 1) =>
+      apiClient
+        .get<AgentSession[]>("/api/agent/sessions", { params: { page } })
+        .then((r) => r.data),
+    getSession: (id: string) =>
+      apiClient
+        .get<AgentSession>(`/api/agent/sessions/${id}`)
+        .then((r) => r.data),
+    deleteSession: (id: string) =>
+      apiClient.delete(`/api/agent/sessions/${id}`).then((r) => r.data),
   },
   alerts: {
     list: () =>
