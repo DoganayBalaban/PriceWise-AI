@@ -147,7 +147,11 @@ class ComparisonService:
             else:
                 cheapest = source.platform
                 diff = round(competitor.current_price - source.current_price, 2)
-                diff_pct = round(diff / competitor.current_price * 100, 1) if competitor.current_price > 0 else 0.0
+                diff_pct = (
+                    round(diff / competitor.current_price * 100, 1)
+                    if competitor.current_price > 0
+                    else 0.0
+                )
         else:
             cheapest = source.platform
             diff = 0.0
