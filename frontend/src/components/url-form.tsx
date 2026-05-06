@@ -43,7 +43,7 @@ export function UrlForm() {
         router.push(`/products/${data.id}`);
       },
       onError: (err: Error) => {
-        if (err.message.includes("limitinize ulaştınız")) {
+        if ((err as Error & { status?: number }).status === 402) {
           setShowUpgrade(true);
         } else {
           toast.error(err.message);

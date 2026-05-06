@@ -36,10 +36,15 @@ export function UpgradeModal({ open, onClose }: UpgradeModalProps) {
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-md mx-4 bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-modal-title"
+        className="relative z-10 w-full max-w-md mx-4 bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl"
+      >
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-lg font-bold text-white">Ürün limitine ulaştınız</h2>
+            <h2 id="upgrade-modal-title" className="text-lg font-bold text-white">Ürün limitine ulaştınız</h2>
             <p className="text-sm text-slate-400 mt-1">
               Ücretsiz planda en fazla 5 ürün takip edebilirsiniz.
             </p>
