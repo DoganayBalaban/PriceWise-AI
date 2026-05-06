@@ -25,6 +25,12 @@ class ProductRepository:
         )
         return result.scalar_one_or_none()
 
+    async def count_by_user(self, user_id: uuid.UUID) -> int:
+        result = await self.session.execute(
+            select(func.count()).select_from(UserProduct).where(UserProduct.user_id == user_id)
+        )
+        return result.scalar_one()
+
     async def list_by_user(self, user_id: uuid.UUID) -> list[Product]:
         result = await self.session.execute(
             select(Product)
