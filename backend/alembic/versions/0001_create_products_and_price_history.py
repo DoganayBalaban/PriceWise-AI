@@ -4,6 +4,7 @@ Revision ID: 0001
 Revises:
 Create Date: 2026-05-02
 """
+
 from typing import Sequence, Union
 
 import sqlalchemy as sa
@@ -57,9 +58,7 @@ def upgrade() -> None:
             server_default=sa.text("now()"),
             nullable=False,
         ),
-        sa.ForeignKeyConstraint(
-            ["product_id"], ["products.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["product_id"], ["products.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(

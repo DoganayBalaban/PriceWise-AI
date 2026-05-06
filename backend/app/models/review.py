@@ -1,7 +1,16 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, CheckConstraint, Date, ForeignKey, Numeric, SmallInteger, Text, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    Date,
+    ForeignKey,
+    Numeric,
+    SmallInteger,
+    Text,
+    func,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, UUIDMixin
@@ -18,7 +27,9 @@ class Review(UUIDMixin, Base):
         CheckConstraint("rating BETWEEN 1 AND 5", name="ck_reviews_rating"),
     )
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    sentiment_label: Mapped[str | None] = mapped_column(Text)  # positive | negative | neutral
+    sentiment_label: Mapped[str | None] = mapped_column(
+        Text
+    )  # positive | negative | neutral
     sentiment_score: Mapped[float | None] = mapped_column(Numeric(4, 3))
     pinecone_id: Mapped[str | None] = mapped_column(Text)
     verified: Mapped[bool] = mapped_column(Boolean, default=False)

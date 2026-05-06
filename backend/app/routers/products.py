@@ -1,19 +1,17 @@
-import uuid
 import logging
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-logger = logging.getLogger(__name__)
-
-from app.core.plans import PLAN_PRODUCT_LIMITS
 from app.core.cache import (
     get_cached_price,
     invalidate_price_cache,
     set_cached_price,
 )
 from app.core.database import get_db
+from app.core.plans import PLAN_PRODUCT_LIMITS
 from app.core.redis import get_redis
 from app.core.security import get_current_user
 from app.models.user import User
@@ -27,6 +25,8 @@ from app.schemas.product import (
 from app.services.product_service import ProductService, ScrapeConflictError
 from app.services.scraper import ScraperService
 from app.services.review_service import scrape_and_save_reviews
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -57,7 +57,9 @@ def _build_response(product, price) -> ProductResponse:
         created_at=product.created_at,
         latest_price=PriceDataResponse(
             price=float(price.price),
-            original_price=float(price.original_price) if price.original_price else None,
+            original_price=float(price.original_price)
+            if price.original_price
+            else None,
             discount_pct=float(price.discount_pct) if price.discount_pct else None,
             in_stock=price.in_stock,
             scraped_at=price.scraped_at,
@@ -94,7 +96,9 @@ async def submit_product(
     repo = ProductRepository(db)
     service = ProductService(repo, ScraperService(), redis)
     try:
-        product, price = await service.get_or_create_product(str(body.url), current_user.id)
+        product, price = await service.get_or_create_product(
+            str(body.url), current_user.id
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ScrapeConflictError as e:
@@ -134,17 +138,19 @@ async def list_products(
                 continue
             price_data = PriceDataResponse(**_price_dict(price))
             await set_cached_price(redis, str(product.id), _price_dict(price))
-        items.append(ProductResponse(
-            id=product.id,
-            url=product.url,
-            platform=product.platform,
-            name=product.name,
-            brand=product.brand,
-            category=product.category,
-            image_url=product.image_url,
-            created_at=product.created_at,
-            latest_price=price_data,
-        ))
+        items.append(
+            ProductResponse(
+                id=product.id,
+                url=product.url,
+                platform=product.platform,
+                name=product.name,
+                brand=product.brand,
+                category=product.category,
+                image_url=product.image_url,
+                created_at=product.created_at,
+                latest_price=price_data,
+            )
+        )
     return ProductListResponse(products=items, total=len(items))
 
 

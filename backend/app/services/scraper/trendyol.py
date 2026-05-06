@@ -1,14 +1,22 @@
-import re
-from datetime import date, datetime
+from datetime import date
 
 from playwright.async_api import async_playwright
 
 from app.services.scraper.base import BaseScraper, ScrapedReview, _USER_AGENT
 
 _MONTH_MAP = {
-    "Ocak": 1, "Şubat": 2, "Mart": 3, "Nisan": 4,
-    "Mayıs": 5, "Haziran": 6, "Temmuz": 7, "Ağustos": 8,
-    "Eylül": 9, "Ekim": 10, "Kasım": 11, "Aralık": 12,
+    "Ocak": 1,
+    "Şubat": 2,
+    "Mart": 3,
+    "Nisan": 4,
+    "Mayıs": 5,
+    "Haziran": 6,
+    "Temmuz": 7,
+    "Ağustos": 8,
+    "Eylül": 9,
+    "Ekim": 10,
+    "Kasım": 11,
+    "Aralık": 12,
 }
 
 
@@ -55,7 +63,9 @@ class TrendyolScraper(BaseScraper):
             pass
         return None
 
-    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]:
+    async def scrape_reviews(
+        self, url: str, max_reviews: int = 100
+    ) -> list[ScrapedReview]:
         reviews_url = self._reviews_url(url)
         reviews: list[ScrapedReview] = []
 
@@ -70,12 +80,20 @@ class TrendyolScraper(BaseScraper):
 
                 page_num = 1
                 while len(reviews) < max_reviews and page_num <= 10:
-                    paginated_url = f"{reviews_url}?sayfa={page_num}" if page_num > 1 else reviews_url
-                    await page.goto(paginated_url, wait_until="domcontentloaded", timeout=25_000)
+                    paginated_url = (
+                        f"{reviews_url}?sayfa={page_num}"
+                        if page_num > 1
+                        else reviews_url
+                    )
+                    await page.goto(
+                        paginated_url, wait_until="domcontentloaded", timeout=25_000
+                    )
                     await page.wait_for_timeout(3000)
 
                     # Scroll to trigger lazy-loaded reviews
-                    await page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+                    await page.evaluate(
+                        "window.scrollTo(0, document.body.scrollHeight / 2)"
+                    )
                     await page.wait_for_timeout(1500)
 
                     items = page.locator(".review-list .review")
@@ -114,11 +132,13 @@ class TrendyolScraper(BaseScraper):
                         except Exception:
                             pass
 
-                        reviews.append(ScrapedReview(
-                            content=content,
-                            rating=rating,
-                            review_date=review_date,
-                        ))
+                        reviews.append(
+                            ScrapedReview(
+                                content=content,
+                                rating=rating,
+                                review_date=review_date,
+                            )
+                        )
 
                     page_num += 1
 

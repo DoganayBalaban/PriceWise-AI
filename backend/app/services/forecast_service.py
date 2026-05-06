@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import numpy as np
 from sklearn.linear_model import LinearRegression

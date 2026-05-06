@@ -2,6 +2,7 @@
 Generates 30 days of realistic mock price history for all products in the DB.
 Run: .venv/bin/python scripts/seed_price_history.py
 """
+
 import asyncio
 import sys
 from pathlib import Path
@@ -46,7 +47,9 @@ def generate_price_series(base_price: float, days: int = 30) -> pd.DataFrame:
     now = pd.Timestamp.now("UTC").tz_localize(None)
     timestamps = [now - pd.Timedelta(days=days - 1 - i) for i in range(days)]
 
-    return pd.DataFrame({"scraped_at": timestamps, "price": [round(p, 2) for p in prices]})
+    return pd.DataFrame(
+        {"scraped_at": timestamps, "price": [round(p, 2) for p in prices]}
+    )
 
 
 async def seed():

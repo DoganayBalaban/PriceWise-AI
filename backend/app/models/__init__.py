@@ -7,4 +7,13 @@ from app.models.review import Review
 from app.models.user import User
 from app.models.user_product import UserProduct
 
-__all__ = ["Base", "Alert", "Product", "PriceHistory", "Review", "User", "AnalysisHistory", "UserProduct"]
+__all__ = [
+    "Base",
+    "Alert",
+    "Product",
+    "PriceHistory",
+    "Review",
+    "User",
+    "AnalysisHistory",
+    "UserProduct",
+]

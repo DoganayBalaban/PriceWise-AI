@@ -14,9 +14,7 @@ class ProductRepository:
         self.session = session
 
     async def get_by_url(self, url: str) -> Product | None:
-        result = await self.session.execute(
-            select(Product).where(Product.url == url)
-        )
+        result = await self.session.execute(select(Product).where(Product.url == url))
         return result.scalar_one_or_none()
 
     async def get_by_id(self, product_id: uuid.UUID) -> Product | None:
@@ -27,7 +25,9 @@ class ProductRepository:
 
     async def count_by_user(self, user_id: uuid.UUID) -> int:
         result = await self.session.execute(
-            select(func.count()).select_from(UserProduct).where(UserProduct.user_id == user_id)
+            select(func.count())
+            .select_from(UserProduct)
+            .where(UserProduct.user_id == user_id)
         )
         return result.scalar_one()
 
@@ -40,7 +40,9 @@ class ProductRepository:
         )
         return list(result.scalars().all())
 
-    async def is_tracked_by_user(self, product_id: uuid.UUID, user_id: uuid.UUID) -> bool:
+    async def is_tracked_by_user(
+        self, product_id: uuid.UUID, user_id: uuid.UUID
+    ) -> bool:
         result = await self.session.execute(
             select(UserProduct).where(
                 UserProduct.product_id == product_id,

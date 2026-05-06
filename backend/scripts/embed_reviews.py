@@ -8,6 +8,7 @@ Usage:
     # Single product
     .venv/bin/python scripts/embed_reviews.py --product-id <uuid>
 """
+
 import argparse
 import asyncio
 import sys

@@ -1,7 +1,9 @@
 """Debug: Print page title + first 3000 chars of HTML to see what Trendyol serves."""
+
 import asyncio
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from playwright.async_api import async_playwright
@@ -13,6 +15,7 @@ _USER_AGENT = (
 )
 
 URL = "https://www.trendyol.com/effe-yapi-dekor/altin-metal-cerceveli-ayakli-boy-aynasi-180x60-cm-p-50446232"
+
 
 async def main():
     async with async_playwright() as pw:
@@ -34,9 +37,13 @@ async def main():
 
         # Check price-like elements
         for sel in [
-            ".prc-dsc", ".prc-org", "[class*='prc-dsc']",
-            ".price", "[class*='price']",
-            ".product-price", "span[data-testid*='price']",
+            ".prc-dsc",
+            ".prc-org",
+            "[class*='prc-dsc']",
+            ".price",
+            "[class*='price']",
+            ".product-price",
+            "span[data-testid*='price']",
         ]:
             els = page.locator(sel)
             count = await els.count()
@@ -48,5 +55,6 @@ async def main():
         html = await page.content()
         print(html[:2000])
         await browser.close()
+
 
 asyncio.run(main())

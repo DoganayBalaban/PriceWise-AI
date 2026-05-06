@@ -49,9 +49,7 @@ class Settings(BaseSettings):
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
-        return self.DATABASE_URL.replace(
-            "postgresql://", "postgresql+asyncpg://", 1
-        )
+        return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
 
 
 settings = Settings()

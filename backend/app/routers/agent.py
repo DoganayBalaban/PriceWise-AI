@@ -148,7 +148,6 @@ async def _agent_stream(
     }
 
     full_state: dict = dict(initial_state)
-    graph_error: bool = False
 
     try:
         graph = await get_agent_graph()
@@ -168,7 +167,6 @@ async def _agent_stream(
     except Exception as exc:
         logger.error("Agent stream error for product %s: %s", product_id, exc)
         yield _sse({"type": "error", "message": "Agent çalıştırılırken hata oluştu."})
-        graph_error = True
 
     final: dict = {
         "decision": full_state.get("decision") or "WAIT",

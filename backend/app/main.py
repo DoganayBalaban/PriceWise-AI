@@ -15,9 +15,15 @@ from app.services.sentiment_service import refresh_all_sentiments
 async def lifespan(app: FastAPI):
     await get_redis()
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(check_price_alerts, "interval", minutes=15, id="price_alert_check")
-    scheduler.add_job(refresh_all_summaries, "interval", hours=24, id="review_summary_refresh")
-    scheduler.add_job(refresh_all_sentiments, "interval", hours=24, id="sentiment_refresh")
+    scheduler.add_job(
+        check_price_alerts, "interval", minutes=15, id="price_alert_check"
+    )
+    scheduler.add_job(
+        refresh_all_summaries, "interval", hours=24, id="review_summary_refresh"
+    )
+    scheduler.add_job(
+        refresh_all_sentiments, "interval", hours=24, id="sentiment_refresh"
+    )
     scheduler.start()
     yield
     scheduler.shutdown()

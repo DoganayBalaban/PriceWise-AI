@@ -5,6 +5,7 @@ Vector ID format : {review_id}_{chunk_index}
 Metadata stored  : product_id, review_id, chunk_index, text, rating, review_date, platform
 reviews.pinecone_id is set to the first chunk ID ({review_id}_0) once embedded.
 """
+
 import logging
 import uuid
 from typing import Any
@@ -20,9 +21,9 @@ logger = logging.getLogger(__name__)
 
 EMBED_MODEL = "text-embedding-3-small"
 EMBED_DIM = 1536
-CHUNK_SIZE = 256        # tokens
-CHUNK_OVERLAP = 32      # tokens
-UPSERT_BATCH = 100      # vectors per Pinecone upsert call
+CHUNK_SIZE = 256  # tokens
+CHUNK_OVERLAP = 32  # tokens
+UPSERT_BATCH = 100  # vectors per Pinecone upsert call
 
 
 def _get_pinecone_index():
@@ -57,21 +58,27 @@ async def embed_and_upsert_reviews(
         return []
 
     if not settings.OPENAI_API_KEY or not settings.PINECONE_API_KEY:
-        logger.warning("OPENAI_API_KEY or PINECONE_API_KEY not configured — skipping embedding")
+        logger.warning(
+            "OPENAI_API_KEY or PINECONE_API_KEY not configured — skipping embedding"
+        )
         return []
 
     splitter = _splitter()
     index = _get_pinecone_index()
 
     vectors: list[dict[str, Any]] = []
-    review_chunk_map: dict[str, list[int]] = {}  # review_id → chunk indices in `vectors`
+    review_chunk_map: dict[
+        str, list[int]
+    ] = {}  # review_id → chunk indices in `vectors`
 
     for review in reviews:
         chunks = splitter.split_text(review.content)
         if not chunks:
             continue
         review_id_str = str(review.id)
-        review_chunk_map[review_id_str] = list(range(len(vectors), len(vectors) + len(chunks)))
+        review_chunk_map[review_id_str] = list(
+            range(len(vectors), len(vectors) + len(chunks))
+        )
         for idx, chunk in enumerate(chunks):
             meta: dict = {
                 "product_id": str(product_id),
@@ -83,7 +90,9 @@ async def embed_and_upsert_reviews(
             }
             if review.rating is not None:
                 meta["rating"] = review.rating
-            vectors.append({"id": f"{review_id_str}_{idx}", "text": chunk, "metadata": meta})
+            vectors.append(
+                {"id": f"{review_id_str}_{idx}", "text": chunk, "metadata": meta}
+            )
 
     if not vectors:
         return []

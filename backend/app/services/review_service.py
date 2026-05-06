@@ -52,7 +52,11 @@ async def scrape_and_save_reviews(
     await embed_pending_reviews(product_id, platform)
 
     # Analyze sentiment for newly saved reviews
-    from app.services.sentiment_service import analyze_reviews_for_product, compute_and_cache_sentiment
+    from app.services.sentiment_service import (
+        analyze_reviews_for_product,
+        compute_and_cache_sentiment,
+    )
+
     try:
         classified = await analyze_reviews_for_product(product_id)
         if classified > 0:

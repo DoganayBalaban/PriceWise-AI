@@ -1,5 +1,5 @@
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
@@ -108,9 +108,7 @@ class BaseScraper:
 
                 discount_pct: float | None = None
                 if current_price and original_price and original_price > current_price:
-                    discount_pct = round(
-                        (1 - current_price / original_price) * 100, 1
-                    )
+                    discount_pct = round((1 - current_price / original_price) * 100, 1)
 
                 image_url = await self._first_image(page, self.IMAGE_SELECTORS)
 
@@ -136,11 +134,14 @@ class BaseScraper:
             finally:
                 await browser.close()
 
-
-    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]:
+    async def scrape_reviews(
+        self, url: str, max_reviews: int = 100
+    ) -> list[ScrapedReview]:
         raise NotImplementedError
 
 
 class BaseScraperProtocol(Protocol):
     async def scrape(self, url: str) -> ScrapedProduct: ...
-    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]: ...
+    async def scrape_reviews(
+        self, url: str, max_reviews: int = 100
+    ) -> list[ScrapedReview]: ...

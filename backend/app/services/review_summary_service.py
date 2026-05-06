@@ -46,7 +46,7 @@ async def generate_summary(
         f"Aşağıda bu ürüne ait {len(reviews)} müşteri yorumu var:\n\n"
         f"{reviews_text}\n\n"
         "Bu yorumları analiz et ve şu JSON formatında yanıt ver:\n"
-        '{\n'
+        "{\n"
         '  "pros": ["en fazla 4 olumlu madde, kısa ve Türkçe"],\n'
         '  "cons": ["en fazla 4 olumsuz madde, kısa ve Türkçe"],\n'
         '  "satisfaction_score": <0-100 arası tam sayı>,\n'

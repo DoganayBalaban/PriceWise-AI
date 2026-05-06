@@ -1,6 +1,5 @@
 import hashlib
 import json
-from typing import Any
 
 from redis.asyncio import Redis
 
@@ -51,7 +50,9 @@ async def get_cached_forecast(redis: Redis, product_id: str, days: int) -> dict 
     return json.loads(raw)
 
 
-async def set_cached_forecast(redis: Redis, product_id: str, days: int, data: dict) -> None:
+async def set_cached_forecast(
+    redis: Redis, product_id: str, days: int, data: dict
+) -> None:
     await redis.set(_forecast_cache_key(product_id, days), json.dumps(data), ex=21600)
 
 
@@ -109,7 +110,9 @@ async def get_cached_agent_decision(redis: Redis, product_id: str) -> dict | Non
 
 
 async def set_cached_agent_decision(redis: Redis, product_id: str, data: dict) -> None:
-    await redis.set(_agent_decision_cache_key(product_id), json.dumps(data), ex=21600)  # 6h
+    await redis.set(
+        _agent_decision_cache_key(product_id), json.dumps(data), ex=21600
+    )  # 6h
 
 
 async def invalidate_agent_decision_cache(redis: Redis, product_id: str) -> None:

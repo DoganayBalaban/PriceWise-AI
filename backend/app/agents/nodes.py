@@ -49,7 +49,10 @@ async def price_analyst_node(state: AgentState) -> dict:
 async def review_rag_node(state: AgentState) -> dict:
     from app.core.redis import get_redis
     from app.services.embedding_service import query_similar_chunks
-    from app.services.sentiment_service import SentimentNotReadyError, get_or_compute_sentiment
+    from app.services.sentiment_service import (
+        SentimentNotReadyError,
+        get_or_compute_sentiment,
+    )
 
     product_id = uuid.UUID(state["product_id"])
     errors = list(state["errors"])

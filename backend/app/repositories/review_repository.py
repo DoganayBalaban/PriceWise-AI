@@ -58,13 +58,15 @@ class ReviewRepository:
             content = r.get("content", "").strip()
             if not content or content in existing_contents:
                 continue
-            self.session.add(Review(
-                product_id=product_id,
-                content=content,
-                rating=r.get("rating"),
-                review_date=r.get("review_date"),
-                verified=r.get("verified", False),
-            ))
+            self.session.add(
+                Review(
+                    product_id=product_id,
+                    content=content,
+                    rating=r.get("rating"),
+                    review_date=r.get("review_date"),
+                    verified=r.get("verified", False),
+                )
+            )
             existing_contents.add(content)
             inserted += 1
 
@@ -102,7 +104,13 @@ class ReviewRepository:
         counts: dict[str, int] = {label: cnt for label, cnt in result.fetchall()}
         total = sum(counts.values())
         if total == 0:
-            return {"score": 0, "total": 0, "positive_pct": 0, "negative_pct": 0, "neutral_pct": 0}
+            return {
+                "score": 0,
+                "total": 0,
+                "positive_pct": 0,
+                "negative_pct": 0,
+                "neutral_pct": 0,
+            }
         pos = counts.get("positive", 0)
         neg = counts.get("negative", 0)
         neu = counts.get("neutral", 0)
@@ -119,7 +127,11 @@ class ReviewRepository:
     ) -> list[dict]:
         cutoff = date.today() - timedelta(days=days)
         result = await self.session.execute(
-            select(Review.review_date, Review.sentiment_label, func.count(Review.id).label("cnt"))
+            select(
+                Review.review_date,
+                Review.sentiment_label,
+                func.count(Review.id).label("cnt"),
+            )
             .where(
                 Review.product_id == product_id,
                 Review.sentiment_label.isnot(None),

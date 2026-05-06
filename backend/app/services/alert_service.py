@@ -21,7 +21,10 @@ def _build_email_html(
     product_id: str,
 ) -> str:
     product_url = f"{settings.APP_URL}/products/{product_id}"
-    fmt = lambda p: f"₺{p:,.2f}"
+
+    def fmt(p: float) -> str:
+        return f"₺{p:,.2f}"
+
     return f"""
 <!DOCTYPE html>
 <html lang="tr">
@@ -62,20 +65,24 @@ def _build_email_html(
 """
 
 
-async def send_alert_email(alert: Alert, product: Product, current_price: float) -> bool:
+async def send_alert_email(
+    alert: Alert, product: Product, current_price: float
+) -> bool:
     resend.api_key = settings.RESEND_API_KEY
     try:
-        resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [alert.email],
-            "subject": f"🔔 Fiyat Düştü: {product.name[:60]}",
-            "html": _build_email_html(
-                product_name=product.name,
-                current_price=current_price,
-                target_price=float(alert.target_price),
-                product_id=str(alert.product_id),
-            ),
-        })
+        resend.Emails.send(
+            {
+                "from": settings.RESEND_FROM_EMAIL,
+                "to": [alert.email],
+                "subject": f"🔔 Fiyat Düştü: {product.name[:60]}",
+                "html": _build_email_html(
+                    product_name=product.name,
+                    current_price=current_price,
+                    target_price=float(alert.target_price),
+                    product_id=str(alert.product_id),
+                ),
+            }
+        )
         return True
     except Exception:
         logger.error("Resend email failed for alert %s", alert.id, exc_info=True)

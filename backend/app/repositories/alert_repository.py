@@ -18,15 +18,18 @@ class AlertRepository:
         target_price: Decimal,
         user_id: uuid.UUID | None = None,
     ) -> Alert:
-        alert = Alert(product_id=product_id, email=email, target_price=target_price, user_id=user_id)
+        alert = Alert(
+            product_id=product_id,
+            email=email,
+            target_price=target_price,
+            user_id=user_id,
+        )
         self.session.add(alert)
         await self.session.flush()
         return alert
 
     async def get_by_id(self, alert_id: uuid.UUID) -> Alert | None:
-        result = await self.session.execute(
-            select(Alert).where(Alert.id == alert_id)
-        )
+        result = await self.session.execute(select(Alert).where(Alert.id == alert_id))
         return result.scalar_one_or_none()
 
     async def get_by_product_email(
@@ -42,9 +45,7 @@ class AlertRepository:
 
     async def list_by_email(self, email: str) -> list[Alert]:
         result = await self.session.execute(
-            select(Alert)
-            .where(Alert.email == email)
-            .order_by(Alert.created_at.desc())
+            select(Alert).where(Alert.email == email).order_by(Alert.created_at.desc())
         )
         return list(result.scalars().all())
 

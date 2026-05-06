@@ -14,8 +14,14 @@ from app.models.user import User
 from app.repositories.review_repository import ReviewRepository
 from app.repositories.product_repository import ProductRepository
 from app.services.embedding_service import query_similar_chunks
-from app.services.review_summary_service import ReviewSummaryError, get_or_generate_summary
-from app.services.sentiment_service import SentimentNotReadyError, get_or_compute_sentiment
+from app.services.review_summary_service import (
+    ReviewSummaryError,
+    get_or_generate_summary,
+)
+from app.services.sentiment_service import (
+    SentimentNotReadyError,
+    get_or_compute_sentiment,
+)
 
 router = APIRouter()
 
@@ -87,8 +93,12 @@ async def get_review_summary(
         return await get_or_generate_summary(pid, redis, db)
     except ReviewSummaryError as exc:
         if "insufficient_reviews" in str(exc):
-            raise HTTPException(status_code=422, detail="Bu ürün için en az 10 yorum gerekli.")
-        raise HTTPException(status_code=503, detail="Özet oluşturulamadı, lütfen tekrar deneyin.")
+            raise HTTPException(
+                status_code=422, detail="Bu ürün için en az 10 yorum gerekli."
+            )
+        raise HTTPException(
+            status_code=503, detail="Özet oluşturulamadı, lütfen tekrar deneyin."
+        )
 
 
 @router.post("/{product_id}/ask")
@@ -150,17 +160,21 @@ async def _rag_stream(
         return
 
     if not chunks:
-        yield _sse({
-            "type": "error",
-            "message": "Yorumlar henüz indekslenmemiş. Lütfen birkaç dakika sonra tekrar deneyin.",
-        })
+        yield _sse(
+            {
+                "type": "error",
+                "message": "Yorumlar henüz indekslenmemiş. Lütfen birkaç dakika sonra tekrar deneyin.",
+            }
+        )
         return
 
     # Build context from retrieved chunks
     context_parts = []
     for i, chunk in enumerate(chunks, 1):
         rating_str = f"Puan: {chunk['rating']}/5 — " if chunk.get("rating") else ""
-        date_str = f"Tarih: {chunk['review_date']} — " if chunk.get("review_date") else ""
+        date_str = (
+            f"Tarih: {chunk['review_date']} — " if chunk.get("review_date") else ""
+        )
         context_parts.append(f"[Yorum {i}] {rating_str}{date_str}{chunk['text']}")
     context = "\n\n".join(context_parts)
 
@@ -194,17 +208,19 @@ Yalnızca yukarıdaki yorumlara dayanarak Türkçe cevap ver. Eğer yorumlarda b
         return
 
     # Send source chunks after the answer
-    yield _sse({
-        "type": "sources",
-        "sources": [
-            {
-                "text": c["text"],
-                "rating": c.get("rating"),
-                "review_date": c.get("review_date"),
-                "score": round(c.get("score", 0), 3),
-            }
-            for c in chunks
-        ],
-        "total_reviews_used": len(chunks),
-    })
+    yield _sse(
+        {
+            "type": "sources",
+            "sources": [
+                {
+                    "text": c["text"],
+                    "rating": c.get("rating"),
+                    "review_date": c.get("review_date"),
+                    "score": round(c.get("score", 0), 3),
+                }
+                for c in chunks
+            ],
+            "total_reviews_used": len(chunks),
+        }
+    )
     yield _sse({"type": "done"})

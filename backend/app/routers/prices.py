@@ -68,7 +68,9 @@ async def get_price_stats(
         min_price=float(stats["min_price"]) if stats["min_price"] is not None else None,
         max_price=float(stats["max_price"]) if stats["max_price"] is not None else None,
         avg_price=float(stats["avg_price"]) if stats["avg_price"] is not None else None,
-        stddev_price=float(stats["stddev_price"]) if stats["stddev_price"] is not None else None,
+        stddev_price=float(stats["stddev_price"])
+        if stats["stddev_price"] is not None
+        else None,
         data_points=int(stats["data_points"]),
     )
 
@@ -93,10 +95,14 @@ async def get_price_forecast(
 
     history = await repo.get_price_history(pid, days=90)
     if not history:
-        raise HTTPException(status_code=422, detail="Tahmin için yeterli fiyat verisi yok")
+        raise HTTPException(
+            status_code=422, detail="Tahmin için yeterli fiyat verisi yok"
+        )
 
     service = ForecastService()
-    result = service.forecast(product_id=product_id, history=history, forecast_days=days)
+    result = service.forecast(
+        product_id=product_id, history=history, forecast_days=days
+    )
 
     await set_cached_forecast(redis, product_id, days, result.model_dump(mode="json"))
     return result

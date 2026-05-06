@@ -76,9 +76,18 @@ class HepsiburadaScraper(BaseScraper):
     def _parse_date(self, text: str) -> date | None:
         text = text.strip()
         month_map = {
-            "Ocak": "01", "Şubat": "02", "Mart": "03", "Nisan": "04",
-            "Mayıs": "05", "Haziran": "06", "Temmuz": "07", "Ağustos": "08",
-            "Eylül": "09", "Ekim": "10", "Kasım": "11", "Aralık": "12",
+            "Ocak": "01",
+            "Şubat": "02",
+            "Mart": "03",
+            "Nisan": "04",
+            "Mayıs": "05",
+            "Haziran": "06",
+            "Temmuz": "07",
+            "Ağustos": "08",
+            "Eylül": "09",
+            "Ekim": "10",
+            "Kasım": "11",
+            "Aralık": "12",
         }
         for tr_month, num in month_map.items():
             text = text.replace(tr_month, num)
@@ -89,7 +98,9 @@ class HepsiburadaScraper(BaseScraper):
                 continue
         return None
 
-    async def scrape_reviews(self, url: str, max_reviews: int = 100) -> list[ScrapedReview]:
+    async def scrape_reviews(
+        self, url: str, max_reviews: int = 100
+    ) -> list[ScrapedReview]:
         reviews: list[ScrapedReview] = []
 
         async with async_playwright() as pw:
@@ -155,13 +166,16 @@ class HepsiburadaScraper(BaseScraper):
                                     data = await el.get_attribute("data-score") or ""
                                     raw = data or aria
                                     import re
+
                                     m = re.search(r"([1-5])", raw)
                                     if m:
                                         rating = int(m.group(1))
                                         break
                                     # fallback: count filled stars in HTML
                                     html = await el.inner_html()
-                                    filled = len(re.findall(r'full|filled|active', html))
+                                    filled = len(
+                                        re.findall(r"full|filled|active", html)
+                                    )
                                     if 1 <= filled <= 5:
                                         rating = filled
                                         break
@@ -181,11 +195,13 @@ class HepsiburadaScraper(BaseScraper):
                                 if review_date:
                                     break
 
-                        reviews.append(ScrapedReview(
-                            content=content,
-                            rating=rating,
-                            review_date=review_date,
-                        ))
+                        reviews.append(
+                            ScrapedReview(
+                                content=content,
+                                rating=rating,
+                                review_date=review_date,
+                            )
+                        )
 
                     # Try "load more" button first, then pagination
                     went_next = False

@@ -41,7 +41,9 @@ class ProductService:
 
         locked = await acquire_scrape_lock(self.redis, url)
         if not locked:
-            raise ScrapeConflictError("Bu URL için scraping zaten devam ediyor, lütfen bekleyin")
+            raise ScrapeConflictError(
+                "Bu URL için scraping zaten devam ediyor, lütfen bekleyin"
+            )
 
         try:
             scraped = await self.scraper.scrape(url, platform)
