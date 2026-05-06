@@ -61,7 +61,7 @@ export function ReviewChat({ productId }: { productId: string }) {
       queryClient.invalidateQueries({ queryKey: queryKeys.reviews.status(productId) });
     }
     if (status !== undefined) prevRagReady.current = status.rag_ready;
-  }, [status?.rag_ready, productId, queryClient]);
+  }, [status, status?.rag_ready, productId, queryClient]);
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -134,7 +134,7 @@ export function ReviewChat({ productId }: { productId: string }) {
           }
         }
       }
-    } catch (err) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         { role: "assistant", content: "Bağlantı hatası. Lütfen tekrar deneyin." },

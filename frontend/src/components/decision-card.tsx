@@ -124,7 +124,7 @@ export function DecisionCard({ productId }: DecisionCardProps) {
             } else if (event.type === "node_done") {
               updateStep(event.node as string, "done");
             } else if (event.type === "final_decision") {
-              const { type: _, ...decisionData } = event;
+              const { type: _type, ...decisionData } = event;
               setResult(decisionData as unknown as AgentDecisionResult);
             } else if (event.type === "error") {
               setError(event.message as string);
