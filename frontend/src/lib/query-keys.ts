@@ -23,5 +23,7 @@ export const queryKeys = {
       ["prices", productId, "stats", days] as const,
     forecast: (productId: string, days: number) =>
       ["prices", productId, "forecast", days] as const,
+    comparison: (productId: string) =>
+      ["prices", productId, "comparison"] as const,
   },
 };

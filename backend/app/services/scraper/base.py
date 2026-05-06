@@ -134,6 +134,10 @@ class BaseScraper:
             finally:
                 await browser.close()
 
+    async def search_first_result(self, query: str) -> str | None:
+        """Scrape the platform search page, return URL of the first product result."""
+        raise NotImplementedError
+
     async def scrape_reviews(
         self, url: str, max_reviews: int = 100
     ) -> list[ScrapedReview]:

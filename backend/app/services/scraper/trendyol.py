@@ -1,8 +1,13 @@
+import logging
 from datetime import date
+from urllib.parse import quote_plus
 
+from playwright.async_api import TimeoutError as PlaywrightTimeout
 from playwright.async_api import async_playwright
 
 from app.services.scraper.base import BaseScraper, ScrapedReview, _USER_AGENT
+
+logger = logging.getLogger(__name__)
 
 _MONTH_MAP = {
     "Ocak": 1,
@@ -46,6 +51,41 @@ class TrendyolScraper(BaseScraper):
         "img[class*='product']",
     ]
     OUT_OF_STOCK_SELECTOR = ".soldout-message, .out-of-stock, [class*='soldout']"
+
+    _SEARCH_URL = "https://www.trendyol.com/sr?q={query}"
+    _SEARCH_RESULT_SELECTORS = [
+        ".p-card-wrppr a[href*='/p-']",
+        "[data-testid='product-card-wrapper'] a",
+        ".product-item a",
+    ]
+
+    async def search_first_result(self, query: str) -> str | None:
+        search_url = self._SEARCH_URL.format(query=quote_plus(query))
+        try:
+            async with async_playwright() as pw:
+                browser = await pw.chromium.launch(headless=self.headless)
+                try:
+                    ctx = await browser.new_context(user_agent=_USER_AGENT)
+                    page = await ctx.new_page()
+                    await page.goto(
+                        search_url, wait_until="domcontentloaded", timeout=20_000
+                    )
+                    for sel in self._SEARCH_RESULT_SELECTORS:
+                        try:
+                            await page.wait_for_selector(sel, timeout=8_000)
+                            href = await page.locator(sel).first.get_attribute("href")
+                            if href:
+                                if href.startswith("http"):
+                                    return href
+                                return f"https://www.trendyol.com{href}"
+                        except PlaywrightTimeout:
+                            continue
+                    return None
+                finally:
+                    await browser.close()
+        except Exception as exc:
+            logger.warning("Trendyol search failed for %r: %s", query, exc)
+            return None
 
     def _reviews_url(self, product_url: str) -> str:
         """Derive the /yorumlar page URL from the product URL."""

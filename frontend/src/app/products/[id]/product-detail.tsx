@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useProduct, useDeleteProduct, useRefreshProduct } from "@/hooks/use-products";
 import { AlertButton } from "@/components/alert-button";
+import { CompareCard } from "@/components/compare-card";
+import { DecisionCard } from "@/components/decision-card";
 import { ForecastCard } from "@/components/forecast-card";
 import { PriceChart } from "@/components/price-chart";
 import { ProductCard } from "@/components/product-card";
-import { DecisionCard } from "@/components/decision-card";
 import { ReviewChat } from "@/components/review-chat";
 import { SentimentCard } from "@/components/sentiment-card";
 import { SummaryCard } from "@/components/summary-card";
@@ -134,6 +135,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
       </div>
       <ProductCard product={data} />
       <PriceChart productId={id} />
+      <CompareCard productId={id} />
       <SentimentCard productId={id} />
       <ForecastCard productId={id} />
       <SummaryCard productId={id} />

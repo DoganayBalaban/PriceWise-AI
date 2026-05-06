@@ -117,3 +117,18 @@ async def set_cached_agent_decision(redis: Redis, product_id: str, data: dict) -
 
 async def invalidate_agent_decision_cache(redis: Redis, product_id: str) -> None:
     await redis.delete(_agent_decision_cache_key(product_id))
+
+
+def _compare_cache_key(product_id: str) -> str:
+    return f"compare:cache:{product_id}"
+
+
+async def get_cached_comparison(redis: Redis, product_id: str) -> dict | None:
+    raw = await redis.get(_compare_cache_key(product_id))
+    if raw is None:
+        return None
+    return json.loads(raw)
+
+
+async def set_cached_comparison(redis: Redis, product_id: str, data: dict) -> None:
+    await redis.set(_compare_cache_key(product_id), json.dumps(data), ex=3600)
