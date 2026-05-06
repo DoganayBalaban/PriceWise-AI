@@ -118,6 +118,12 @@ export const api = {
     deleteSession: (id: string) =>
       apiClient.delete(`/api/agent/sessions/${id}`).then((r) => r.data),
   },
+  payments: {
+    getCheckoutUrl: (plan: "pro" | "business") =>
+      apiClient
+        .get<{ url: string }>(`/api/payments/checkout/${plan}`)
+        .then((r) => r.data),
+  },
   alerts: {
     list: () =>
       apiClient

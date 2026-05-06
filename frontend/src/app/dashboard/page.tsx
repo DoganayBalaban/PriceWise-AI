@@ -35,7 +35,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
           <StatCard
             label="Takip edilen ürün"
             value={loadingProducts ? "—" : String(products.length)}
@@ -53,6 +53,32 @@ export default function DashboardPage() {
             className="hidden sm:flex capitalize"
           />
         </div>
+
+        {/* Product quota bar */}
+        {!loadingProducts && (() => {
+          const plan = (session?.user as { plan?: string })?.plan ?? "free";
+          const limit = plan === "business" ? 9999 : plan === "pro" ? 100 : 5;
+          const count = products.length;
+          const pct = Math.min((count / limit) * 100, 100);
+          const near = pct >= 80;
+          if (limit === 9999) return null;
+          return (
+            <div className="mb-8 bg-slate-800/60 border border-slate-700 rounded-xl px-4 py-3 space-y-1.5">
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-400">Ürün kullanımı</span>
+                <span className={near ? "text-amber-400 font-medium" : "text-slate-400"}>
+                  {count} / {limit}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-slate-700 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${near ? "bg-amber-500" : "bg-blue-500"}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Add product */}
         <section className="mb-8">
