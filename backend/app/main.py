@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.redis import close_redis, get_redis
-from app.routers import agent, alerts, auth, health, prices, products, reviews
+from app.routers import agent, alerts, auth, health, payments, prices, products, reviews
 from app.services.alert_service import check_price_alerts
 from app.services.review_summary_service import refresh_all_summaries
 from app.services.sentiment_service import refresh_all_sentiments
@@ -46,3 +46,4 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["alerts"])
 app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 app.include_router(agent.router, prefix="/api/agent", tags=["agent"])
+app.include_router(payments.router, prefix="/api/payments", tags=["payments"])

@@ -29,6 +29,22 @@ from app.services.review_service import scrape_and_save_reviews
 
 router = APIRouter()
 
+PLAN_PRODUCT_LIMITS = {"free": 5, "pro": 100, "business": 9999}
+
+
+async def check_product_quota(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    limit = PLAN_PRODUCT_LIMITS.get(current_user.plan, 5)
+    repo = ProductRepository(db)
+    count = await repo.count_by_user(current_user.id)
+    if count >= limit:
+        raise HTTPException(
+            status_code=402,
+            detail=f"Ürün limitinize ulaştınız ({limit}/{limit}). Daha fazla ürün takip etmek için planınızı yükseltin.",
+        )
+
 
 def _build_response(product, price) -> ProductResponse:
     return ProductResponse(
@@ -74,6 +90,7 @@ async def submit_product(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
     current_user: User = Depends(get_current_user),
+    _quota: None = Depends(check_product_quota),
 ) -> ProductResponse:
     repo = ProductRepository(db)
     service = ProductService(repo, ScraperService(), redis)
