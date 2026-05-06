@@ -18,6 +18,7 @@ class User(UUIDMixin, Base):
     queries_used: Mapped[int] = mapped_column(Integer, default=0)
     queries_limit: Mapped[int] = mapped_column(Integer, default=5)
     lemon_customer_id: Mapped[str | None] = mapped_column(Text)
+    lemon_subscription_id: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     analysis_history: Mapped[list["AnalysisHistory"]] = relationship(
