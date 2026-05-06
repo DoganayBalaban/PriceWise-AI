@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
+from app.core.plans import PLAN_PRODUCT_LIMITS
 from app.core.cache import (
     get_cached_price,
     invalidate_price_cache,
@@ -28,8 +29,6 @@ from app.services.scraper import ScraperService
 from app.services.review_service import scrape_and_save_reviews
 
 router = APIRouter()
-
-PLAN_PRODUCT_LIMITS = {"free": 5, "pro": 100, "business": 9999}
 
 
 async def check_product_quota(

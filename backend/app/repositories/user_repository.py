@@ -44,9 +44,12 @@ class UserRepository:
         queries_limit: int,
         lemon_customer_id: str | None = None,
         lemon_subscription_id: str | None = None,
+        reset_queries_used: bool = False,
     ) -> User:
         user.plan = plan
         user.queries_limit = queries_limit
+        if reset_queries_used:
+            user.queries_used = 0
         if lemon_customer_id is not None:
             user.lemon_customer_id = lemon_customer_id
         if lemon_subscription_id is not None:

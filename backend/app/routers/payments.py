@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.database import get_db
+from app.core.plans import PLAN_PRODUCT_LIMITS, get_product_limit
 from app.core.security import get_current_user
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
@@ -16,15 +17,9 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-PLAN_LIMITS = {
-    "pro": 100,
-    "business": 9999,
-    "free": 5,
-}
-
-VARIANT_TO_PLAN = {
-    settings.LS_VARIANT_PRO: ("pro", 100),
-    settings.LS_VARIANT_BUSINESS: ("business", 9999),
+VARIANT_TO_PLAN: dict[str, str] = {
+    settings.LS_VARIANT_PRO: "pro",
+    settings.LS_VARIANT_BUSINESS: "business",
 }
 
 
@@ -99,19 +94,19 @@ async def lemon_squeezy_webhook(
         await repo.update_plan(
             user,
             plan="free",
-            queries_limit=5,
+            queries_limit=get_product_limit("free"),
+            reset_queries_used=True,
             lemon_subscription_id=subscription_id,
         )
     else:
-        plan_info = VARIANT_TO_PLAN.get(variant_id)
-        if plan_info is None:
+        plan = VARIANT_TO_PLAN.get(variant_id)
+        if plan is None:
             logger.warning("Webhook: unknown variant_id=%s", variant_id)
             return {"status": "unknown_variant"}
-        plan, limit = plan_info
         await repo.update_plan(
             user,
             plan=plan,
-            queries_limit=limit,
+            queries_limit=get_product_limit(plan),
             lemon_customer_id=customer_id,
             lemon_subscription_id=subscription_id,
         )
