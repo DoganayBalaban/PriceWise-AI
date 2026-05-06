@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     # Payment
     LEMON_SQUEEZY_API_KEY: str = ""
     LEMON_SQUEEZY_WEBHOOK_SECRET: str = ""
+    LEMON_SQUEEZY_STORE_ID: str = ""
+    LS_VARIANT_PRO: str = "placeholder_pro_variant_id"
+    LS_VARIANT_BUSINESS: str = "placeholder_business_variant_id"
 
     # MLflow
     MLFLOW_TRACKING_URI: str = "http://localhost:5000"
