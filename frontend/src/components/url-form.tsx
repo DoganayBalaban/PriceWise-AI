@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 import { useSubmitProduct } from "@/hooks/use-products";
+import { UpgradeModal } from "@/components/upgrade-modal";
 
 const schema = z.object({
   url: z
@@ -23,6 +25,7 @@ type FormValues = z.infer<typeof schema>;
 export function UrlForm() {
   const router = useRouter();
   const { mutate, isPending } = useSubmitProduct();
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const {
     register,
@@ -40,12 +43,18 @@ export function UrlForm() {
         router.push(`/products/${data.id}`);
       },
       onError: (err: Error) => {
-        toast.error(err.message);
+        if ((err as Error & { status?: number }).status === 402) {
+          setShowUpgrade(true);
+        } else {
+          toast.error(err.message);
+        }
       },
     });
   }
 
   return (
+    <>
+    <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} />
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
       <div className="flex gap-3 max-w-xl mx-auto">
         <input
@@ -74,5 +83,6 @@ export function UrlForm() {
         <p className="text-red-400 text-sm text-center">{errors.url.message}</p>
       )}
     </form>
+    </>
   );
 }

@@ -30,3 +30,29 @@ class UserRepository:
         self.session.add(user)
         await self.session.flush()
         return user
+
+    async def get_by_lemon_customer_id(self, customer_id: str) -> User | None:
+        result = await self.session.execute(
+            select(User).where(User.lemon_customer_id == customer_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def update_plan(
+        self,
+        user: User,
+        plan: str,
+        queries_limit: int,
+        lemon_customer_id: str | None = None,
+        lemon_subscription_id: str | None = None,
+        reset_queries_used: bool = False,
+    ) -> User:
+        user.plan = plan
+        user.queries_limit = queries_limit
+        if reset_queries_used:
+            user.queries_used = 0
+        if lemon_customer_id is not None:
+            user.lemon_customer_id = lemon_customer_id
+        if lemon_subscription_id is not None:
+            user.lemon_subscription_id = lemon_subscription_id
+        await self.session.flush()
+        return user

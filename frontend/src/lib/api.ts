@@ -43,7 +43,9 @@ apiClient.interceptors.response.use(
   (err) => {
     const message =
       err.response?.data?.detail ?? err.message ?? "Unknown error";
-    return Promise.reject(new Error(message));
+    const error = new Error(message) as Error & { status?: number };
+    error.status = err.response?.status;
+    return Promise.reject(error);
   }
 );
 
@@ -117,6 +119,12 @@ export const api = {
         .then((r) => r.data),
     deleteSession: (id: string) =>
       apiClient.delete(`/api/agent/sessions/${id}`).then((r) => r.data),
+  },
+  payments: {
+    getCheckoutUrl: (plan: "pro" | "business") =>
+      apiClient
+        .get<{ url: string }>(`/api/payments/checkout/${plan}`)
+        .then((r) => r.data),
   },
   alerts: {
     list: () =>
