@@ -95,7 +95,7 @@ export function SummaryCard({ productId }: SummaryCardProps) {
 
           {/* Summary sentence */}
           <p className="text-sm text-slate-400 italic border-t border-slate-700 pt-3">
-            "{data.summary}"
+            &ldquo;{data.summary}&rdquo;
           </p>
 
           {/* Footer */}

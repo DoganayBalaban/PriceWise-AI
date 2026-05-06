@@ -13,6 +13,9 @@ class ScraperService:
     ) -> list[ScrapedReview]:
         return await self._get_scraper(platform).scrape_reviews(url, max_reviews)
 
+    async def search_first_result(self, query: str, platform: str) -> str | None:
+        return await self._get_scraper(platform).search_first_result(query)
+
     def _get_scraper(self, platform: str) -> TrendyolScraper | HepsiburadaScraper:
         if platform == "trendyol":
             return TrendyolScraper(headless=settings.PLAYWRIGHT_HEADLESS)

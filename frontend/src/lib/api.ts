@@ -12,6 +12,7 @@ import type {
   ProductResponse,
 } from "@/types/product";
 import type { AgentSession } from "@/types/agent";
+import type { ComparisonResult } from "@/types/comparison";
 import type { ReviewSummaryResponse, SentimentResponse } from "@/types/review";
 
 export const apiClient = axios.create({
@@ -92,6 +93,10 @@ export const api = {
         .get<ForecastResponse>(`/api/prices/${productId}/forecast`, {
           params: { days },
         })
+        .then((r) => r.data),
+    getComparison: (productId: string) =>
+      apiClient
+        .get<ComparisonResult>(`/api/prices/${productId}/compare`)
         .then((r) => r.data),
   },
   reviews: {

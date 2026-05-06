@@ -161,6 +161,16 @@ class ReviewRepository:
         )
         return list(result.scalars().all())
 
+    async def get_avg_rating(self, product_id: uuid.UUID) -> float | None:
+        result = await self.session.execute(
+            select(func.avg(Review.rating)).where(
+                Review.product_id == product_id,
+                Review.rating.isnot(None),
+            )
+        )
+        val = result.scalar_one_or_none()
+        return round(float(val), 1) if val is not None else None
+
     async def set_pinecone_id(self, review_id: uuid.UUID, pinecone_id: str) -> None:
         result = await self.session.execute(
             select(Review).where(Review.id == review_id)

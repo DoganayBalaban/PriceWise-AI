@@ -4,15 +4,24 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.cache import get_cached_forecast, set_cached_forecast
+from app.core.cache import (
+    get_cached_comparison,
+    get_cached_forecast,
+    set_cached_comparison,
+    set_cached_forecast,
+)
 from app.core.database import get_db
 from app.core.redis import get_redis
 from app.core.security import get_current_user
 from app.models.user import User
 from app.repositories.product_repository import ProductRepository
+from app.repositories.review_repository import ReviewRepository
+from app.schemas.comparison import ComparisonResult
 from app.schemas.prices import ForecastResponse
 from app.schemas.product import PriceHistoryEntry, PriceStatsResponse
+from app.services.comparison_service import ComparisonService
 from app.services.forecast_service import ForecastService
+from app.services.scraper import ScraperService
 
 router = APIRouter()
 
@@ -108,13 +117,32 @@ async def get_price_forecast(
     return result
 
 
-@router.get("/{product_id}/compare")
+@router.get("/{product_id}/compare", response_model=ComparisonResult)
 async def compare_prices(
     product_id: str,
+    db: AsyncSession = Depends(get_db),
+    redis: Redis = Depends(get_redis),
     current_user: User = Depends(get_current_user),
-) -> dict:
-    return {
-        "message": "Price comparison coming soon",
-        "product_id": product_id,
-        "comparisons": [],
-    }
+) -> ComparisonResult:
+    pid = _parse_uuid(product_id)
+    repo = ProductRepository(db)
+    product = await repo.get_by_id(pid)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    cached = await get_cached_comparison(redis, product_id)
+    if cached:
+        return ComparisonResult(**cached)
+
+    latest_price = await repo.get_latest_price(pid)
+    if latest_price is None:
+        raise HTTPException(status_code=422, detail="Fiyat verisi henüz yok")
+
+    service = ComparisonService(
+        scraper_service=ScraperService(),
+        review_repo=ReviewRepository(db),
+    )
+    result = await service.compare(product, latest_price)
+
+    await set_cached_comparison(redis, product_id, result.model_dump(mode="json"))
+    return result

@@ -1,8 +1,13 @@
+import logging
 from datetime import date, datetime
+from urllib.parse import quote_plus
 
+from playwright.async_api import TimeoutError as PlaywrightTimeout
 from playwright.async_api import async_playwright
 
 from app.services.scraper.base import BaseScraper, ScrapedReview, _USER_AGENT
+
+logger = logging.getLogger(__name__)
 
 
 class HepsiburadaScraper(BaseScraper):
@@ -30,6 +35,41 @@ class HepsiburadaScraper(BaseScraper):
         ".product-image img",
     ]
     OUT_OF_STOCK_SELECTOR = ".outOfStock, [data-testid='out-of-stock'], .stok-yok"
+
+    _SEARCH_URL = "https://www.hepsiburada.com/ara?q={query}"
+    _SEARCH_RESULT_SELECTORS = [
+        "li[class*='productListContent'] a[href*='-pm-']",
+        "[data-test-id='product-card'] a",
+        "[data-testid='product-card'] a",
+    ]
+
+    async def search_first_result(self, query: str) -> str | None:
+        search_url = self._SEARCH_URL.format(query=quote_plus(query))
+        try:
+            async with async_playwright() as pw:
+                browser = await pw.chromium.launch(headless=self.headless)
+                try:
+                    ctx = await browser.new_context(user_agent=_USER_AGENT)
+                    page = await ctx.new_page()
+                    await page.goto(
+                        search_url, wait_until="domcontentloaded", timeout=20_000
+                    )
+                    for sel in self._SEARCH_RESULT_SELECTORS:
+                        try:
+                            await page.wait_for_selector(sel, timeout=8_000)
+                            href = await page.locator(sel).first.get_attribute("href")
+                            if href:
+                                if href.startswith("http"):
+                                    return href
+                                return f"https://www.hepsiburada.com{href}"
+                        except PlaywrightTimeout:
+                            continue
+                    return None
+                finally:
+                    await browser.close()
+        except Exception as exc:
+            logger.warning("Hepsiburada search failed for %r: %s", query, exc)
+            return None
 
     # Review selectors
     _REVIEW_CONTAINER = [
