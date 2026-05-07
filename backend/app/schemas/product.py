@@ -33,6 +33,9 @@ class ProductResponse(BaseModel):
 class ProductListResponse(BaseModel):
     products: list[ProductResponse]
     total: int
+    page: int
+    limit: int
+    pages: int
 
 
 class PriceHistoryEntry(BaseModel):

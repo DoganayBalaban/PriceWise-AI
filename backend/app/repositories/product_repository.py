@@ -31,12 +31,23 @@ class ProductRepository:
         )
         return result.scalar_one()
 
-    async def list_by_user(self, user_id: uuid.UUID) -> list[Product]:
+    async def list_by_user(
+        self,
+        user_id: uuid.UUID,
+        sort: str = "added_at",
+        order: str = "desc",
+        offset: int = 0,
+        limit: int = 20,
+    ) -> list[Product]:
+        sort_col = Product.name if sort == "name" else UserProduct.added_at
+        order_fn = sort_col.asc if order == "asc" else sort_col.desc
         result = await self.session.execute(
             select(Product)
             .join(UserProduct, UserProduct.product_id == Product.id)
             .where(UserProduct.user_id == user_id)
-            .order_by(UserProduct.added_at.desc())
+            .order_by(order_fn())
+            .offset(offset)
+            .limit(limit)
         )
         return list(result.scalars().all())
 

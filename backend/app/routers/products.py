@@ -1,7 +1,8 @@
 import logging
 import uuid
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from typing import Literal
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -124,9 +125,20 @@ async def list_products(
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
     current_user: User = Depends(get_current_user),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    sort: Literal["added_at", "name"] = Query("added_at"),
+    order: Literal["asc", "desc"] = Query("desc"),
 ) -> ProductListResponse:
     repo = ProductRepository(db)
-    products = await repo.list_by_user(current_user.id)
+    total = await repo.count_by_user(current_user.id)
+    products = await repo.list_by_user(
+        current_user.id,
+        sort=sort,
+        order=order,
+        offset=(page - 1) * limit,
+        limit=limit,
+    )
     items = []
     for product in products:
         cached = await get_cached_price(redis, str(product.id))
@@ -151,7 +163,13 @@ async def list_products(
                 latest_price=price_data,
             )
         )
-    return ProductListResponse(products=items, total=len(items))
+    return ProductListResponse(
+        products=items,
+        total=total,
+        page=page,
+        limit=limit,
+        pages=-(-total // limit),  # ceil division
+    )
 
 
 @router.get("/{product_id}", response_model=ProductResponse)
