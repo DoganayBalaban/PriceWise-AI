@@ -5,12 +5,17 @@ import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 import type { AlertCreateRequest, AlertUpdateRequest } from "@/types/alert";
 
-export function useAlerts() {
+export function useAlerts(active?: boolean) {
   return useQuery({
-    queryKey: queryKeys.alerts.all,
-    queryFn: () => api.alerts.list(),
+    queryKey: [...queryKeys.alerts.all, { active }],
+    queryFn: () => api.alerts.list(active),
     staleTime: 60_000,
   });
+}
+
+export function useProductAlert(productId: string) {
+  const { data: alerts } = useAlerts(true);
+  return alerts?.find((a) => a.product_id === productId) ?? null;
 }
 
 export function useCreateAlert() {

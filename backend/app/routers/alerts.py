@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -51,9 +51,10 @@ async def create_alert(
 async def list_alerts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
+    active: bool | None = Query(default=None),
 ) -> list[AlertResponse]:
     repo = AlertRepository(db)
-    alerts = await repo.list_by_email(current_user.email)
+    alerts = await repo.list_by_email(current_user.email, active=active)
     return [AlertResponse.model_validate(a) for a in alerts]
 
 

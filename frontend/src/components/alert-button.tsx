@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { useCreateAlert } from "@/hooks/use-alerts";
+import { useCreateAlert, useProductAlert } from "@/hooks/use-alerts";
 
 const schema = z.object({
   target_price: z.number({ error: "Geçerli bir fiyat girin" }).positive("Geçerli bir fiyat girin"),
@@ -21,6 +21,7 @@ interface AlertButtonProps {
 export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
   const [open, setOpen] = useState(false);
   const { mutate: createAlert, isPending } = useCreateAlert();
+  const activeAlert = useProductAlert(productId);
 
   const {
     register,
@@ -50,7 +51,11 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 transition-colors"
+        className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+          activeAlert
+            ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border-emerald-500/30"
+            : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border-amber-500/30"
+        }`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -66,7 +71,14 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
-        Alarm Kur
+        {activeAlert ? (
+          <span className="flex items-center gap-1">
+            Alarm Aktif
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          </span>
+        ) : (
+          "Alarm Kur"
+        )}
       </button>
 
       {open && (

@@ -132,9 +132,9 @@ export const api = {
         .then((r) => r.data),
   },
   alerts: {
-    list: () =>
+    list: (active?: boolean) =>
       apiClient
-        .get<AlertResponse[]>("/api/alerts/")
+        .get<AlertResponse[]>("/api/alerts/", { params: active !== undefined ? { active } : {} })
         .then((r) => r.data),
     create: (data: AlertCreateRequest) =>
       apiClient.post<AlertResponse>("/api/alerts/", data).then((r) => r.data),
