@@ -7,6 +7,8 @@ from pydantic import BaseModel
 class ForecastPoint(BaseModel):
     date: datetime
     predicted_price: float
+    lower: float | None = None
+    upper: float | None = None
 
 
 class ForecastResponse(BaseModel):

@@ -42,20 +42,21 @@ def _log_to_mlflow(
 def _linear_forecast(
     history: list[PriceHistory],
     forecast_days: int,
-) -> tuple[np.ndarray, float]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     prices = np.array([float(h.price) for h in history])
     n = len(prices)
     X = np.arange(n).reshape(-1, 1).astype(float)
     model = LinearRegression().fit(X, prices)
     mae = float(np.mean(np.abs(prices - model.predict(X))))
     X_future = np.arange(n, n + forecast_days).reshape(-1, 1).astype(float)
-    return model.predict(X_future), mae
+    yhat = model.predict(X_future)
+    return yhat, yhat, yhat, mae  # no confidence interval for linear
 
 
 def _prophet_forecast(
     history: list[PriceHistory],
     forecast_days: int,
-) -> tuple[np.ndarray, float]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     import pandas as pd
     from prophet import Prophet
 
@@ -85,8 +86,13 @@ def _prophet_forecast(
     in_sample_preds = forecast_df.iloc[: len(df)]["yhat"].to_numpy()
     mae = float(np.mean(np.abs(df["y"].to_numpy() - in_sample_preds)))
 
-    future_preds = forecast_df.iloc[len(df) :]["yhat"].to_numpy()
-    return future_preds, mae
+    future = forecast_df.iloc[len(df) :]
+    return (
+        future["yhat"].to_numpy(),
+        future["yhat_lower"].to_numpy(),
+        future["yhat_upper"].to_numpy(),
+        mae,
+    )
 
 
 class ForecastService:
@@ -100,11 +106,13 @@ class ForecastService:
         n = len(history)
 
         if n >= _PROPHET_MIN_POINTS:
-            future_prices, mae = _prophet_forecast(history, forecast_days)
+            future_prices, lower, upper, mae = _prophet_forecast(history, forecast_days)
             model_name = "prophet"
+            has_intervals = True
         else:
-            future_prices, mae = _linear_forecast(history, forecast_days)
+            future_prices, lower, upper, mae = _linear_forecast(history, forecast_days)
             model_name = "linear_regression"
+            has_intervals = False
 
         last_date = history[-1].scraped_at
         if last_date.tzinfo is not None:
@@ -114,6 +122,8 @@ class ForecastService:
             ForecastPoint(
                 date=last_date + timedelta(days=i + 1),
                 predicted_price=round(float(max(future_prices[i], 0.01)), 2),
+                lower=round(float(max(lower[i], 0.01)), 2) if has_intervals else None,
+                upper=round(float(max(upper[i], 0.01)), 2) if has_intervals else None,
             )
             for i in range(forecast_days)
         ]

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import {
-  LineChart,
+  ComposedChart,
   Line,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -102,7 +103,13 @@ export function ForecastCard({ productId }: ForecastCardProps) {
           </div>
 
           <ResponsiveContainer width="100%" height={160}>
-            <LineChart data={data.forecast} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+            <ComposedChart data={data.forecast} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="confidenceBand" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#818cf8" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#818cf8" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
               <XAxis
                 dataKey="date"
@@ -124,11 +131,34 @@ export function ForecastCard({ productId }: ForecastCardProps) {
               <Tooltip
                 contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: 8 }}
                 labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-                formatter={(v) => [fmt.format(Number(v)), "Tahmin"]}
+                formatter={(v, name) => {
+                  if (name === "upper" || name === "lower") return null;
+                  return [fmt.format(Number(v)), "Tahmin"];
+                }}
                 labelFormatter={(v) =>
                   new Date(String(v)).toLocaleDateString("tr-TR", { day: "numeric", month: "long" })
                 }
               />
+              {data.forecast[0]?.upper != null && (
+                <Area
+                  type="monotone"
+                  dataKey="upper"
+                  stroke="none"
+                  fill="url(#confidenceBand)"
+                  activeDot={false}
+                  legendType="none"
+                />
+              )}
+              {data.forecast[0]?.lower != null && (
+                <Area
+                  type="monotone"
+                  dataKey="lower"
+                  stroke="none"
+                  fill="#0f172a"
+                  activeDot={false}
+                  legendType="none"
+                />
+              )}
               <Line
                 type="monotone"
                 dataKey="predicted_price"
@@ -137,7 +167,7 @@ export function ForecastCard({ productId }: ForecastCardProps) {
                 dot={false}
                 strokeDasharray="4 2"
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
 
           <p className="text-xs text-slate-600 text-right">

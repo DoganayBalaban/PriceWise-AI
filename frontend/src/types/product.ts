@@ -44,6 +44,8 @@ export interface PriceStatsResponse {
 export interface ForecastPoint {
   date: string;
   predicted_price: number;
+  lower: number | null;
+  upper: number | null;
 }
 
 export interface ForecastResponse {
