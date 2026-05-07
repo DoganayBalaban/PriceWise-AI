@@ -141,6 +141,10 @@ class ProductRepository:
         )
         return list(result.scalars().all())
 
+    async def list_all(self) -> list[Product]:
+        result = await self.session.execute(select(Product))
+        return list(result.scalars().all())
+
     async def get_price_stats(self, product_id: uuid.UUID, days: int) -> dict:
         since = datetime.utcnow() - timedelta(days=days)
         row = await self.session.execute(

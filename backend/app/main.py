@@ -8,6 +8,7 @@ from app.core.redis import close_redis, get_redis
 from app.routers import agent, alerts, auth, health, payments, prices, products, reviews
 from app.services.alert_service import check_price_alerts
 from app.services.review_summary_service import refresh_all_summaries
+from app.services.scrape_service import scrape_all_products
 from app.services.sentiment_service import refresh_all_sentiments
 
 
@@ -15,6 +16,9 @@ from app.services.sentiment_service import refresh_all_sentiments
 async def lifespan(app: FastAPI):
     await get_redis()
     scheduler = AsyncIOScheduler()
+    scheduler.add_job(
+        scrape_all_products, "interval", hours=24, id="daily_scrape"
+    )
     scheduler.add_job(
         check_price_alerts, "interval", minutes=15, id="price_alert_check"
     )
