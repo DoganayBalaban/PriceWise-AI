@@ -3,6 +3,7 @@ import hmac
 import json
 import logging
 
+import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,6 +40,42 @@ async def get_checkout_url(
         f"?checkout[email]={current_user.email}"
     )
     return {"url": checkout_url}
+
+
+@router.post("/portal")
+async def get_portal_url(
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    if current_user.plan == "free" or not current_user.lemon_subscription_id:
+        raise HTTPException(status_code=404, detail="Aktif abonelik bulunamadı")
+
+    if not settings.LEMON_SQUEEZY_API_KEY:
+        raise HTTPException(status_code=503, detail="Ödeme sistemi yapılandırılmamış")
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"https://api.lemonsqueezy.com/v1/subscriptions/{current_user.lemon_subscription_id}",
+            headers={
+                "Authorization": f"Bearer {settings.LEMON_SQUEEZY_API_KEY}",
+                "Accept": "application/vnd.api+json",
+            },
+            timeout=10,
+        )
+
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail="Abonelik bilgisi alınamadı")
+
+    portal_url = (
+        resp.json()
+        .get("data", {})
+        .get("attributes", {})
+        .get("urls", {})
+        .get("customer_portal")
+    )
+    if not portal_url:
+        raise HTTPException(status_code=502, detail="Portal URL alınamadı")
+
+    return {"url": portal_url}
 
 
 @router.post("/webhook")
