@@ -43,10 +43,13 @@ class AlertRepository:
         )
         return result.scalar_one_or_none()
 
-    async def list_by_email(self, email: str) -> list[Alert]:
-        result = await self.session.execute(
-            select(Alert).where(Alert.email == email).order_by(Alert.created_at.desc())
-        )
+    async def list_by_email(
+        self, email: str, active: bool | None = None
+    ) -> list[Alert]:
+        q = select(Alert).where(Alert.email == email)
+        if active is not None:
+            q = q.where(Alert.active == active)  # noqa: E712
+        result = await self.session.execute(q.order_by(Alert.created_at.desc()))
         return list(result.scalars().all())
 
     async def list_active(self) -> list[Alert]:
