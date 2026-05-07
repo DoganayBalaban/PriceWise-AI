@@ -28,6 +28,11 @@ async def invalidate_price_cache(redis: Redis, product_id: str) -> None:
     await redis.delete(_price_cache_key(product_id))
 
 
+async def invalidate_forecast_cache(redis: Redis, product_id: str) -> None:
+    keys = [_forecast_cache_key(product_id, d) for d in (30, 90, 180)]
+    await redis.delete(*keys)
+
+
 async def acquire_scrape_lock(redis: Redis, url: str) -> bool:
     """Returns True if lock acquired, False if already locked."""
     key = _scrape_lock_key(url)
