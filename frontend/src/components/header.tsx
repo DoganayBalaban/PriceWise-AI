@@ -22,6 +22,7 @@ export function Header() {
         { href: "/dashboard", label: "Dashboard" },
         { href: "/products", label: "Ürünler" },
         { href: "/alerts", label: "Alarmlar" },
+        { href: "/settings", label: "Ayarlar" },
       ]
     : [];
 

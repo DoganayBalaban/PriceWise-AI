@@ -55,6 +55,21 @@ export const api = {
     apiClient
       .get<{ status: string; service: string }>("/api/health")
       .then((r) => r.data),
+  auth: {
+    me: () =>
+      apiClient
+        .get<{
+          id: string;
+          email: string;
+          name: string | null;
+          plan: string;
+          queries_used: number;
+          queries_limit: number;
+          product_count: number;
+          product_limit: number;
+        }>("/api/auth/me")
+        .then((r) => r.data),
+  },
   products: {
     list: () =>
       apiClient
@@ -129,6 +144,10 @@ export const api = {
     getCheckoutUrl: (plan: "pro" | "business") =>
       apiClient
         .get<{ url: string }>(`/api/payments/checkout/${plan}`)
+        .then((r) => r.data),
+    getPortalUrl: () =>
+      apiClient
+        .post<{ url: string }>("/api/payments/portal")
         .then((r) => r.data),
   },
   alerts: {
