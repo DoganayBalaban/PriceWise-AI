@@ -17,4 +17,6 @@ def detect_platform(url: str) -> str:
         return "trendyol"
     if "hepsiburada.com" in host:
         return "hepsiburada"
+    if "n11.com" in host:
+        return "n11"
     raise ValueError(f"Unsupported platform for URL: {url}")
