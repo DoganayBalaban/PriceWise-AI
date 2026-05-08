@@ -223,7 +223,7 @@ See the [open issues](https://github.com/DoganayBalaban/PriceWise-AI/issues) for
 
 ## Contact
 
-Doğanay Balaban — [LinkedIn](https://linkedin.com/in/doganaybalaban) — dbalaban1907@gmail.com
+Doğanay Balaban — [LinkedIn](https://linkedin.com/in/doganay-balaban) — dbalaban1907@gmail.com
 
 Project Link: [https://github.com/DoganayBalaban/PriceWise-AI](https://github.com/DoganayBalaban/PriceWise-AI)
 
@@ -232,6 +232,7 @@ Project Link: [https://github.com/DoganayBalaban/PriceWise-AI](https://github.co
 ---
 
 ## Acknowledgments
+
 
 * [LangChain](https://python.langchain.com/)
 * [LangGraph](https://langchain-ai.github.io/langgraph/)
@@ -256,7 +257,7 @@ Project Link: [https://github.com/DoganayBalaban/PriceWise-AI](https://github.co
 [issues-shield]: https://img.shields.io/github/issues/DoganayBalaban/PriceWise-AI.svg?style=for-the-badge
 [issues-url]: https://github.com/DoganayBalaban/PriceWise-AI/issues
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
-[linkedin-url]: https://linkedin.com/in/doganaybalaban
+[linkedin-url]: https://linkedin.com/in/doganay-balaban
 
 [Next.js]: https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white
 [Next-url]: https://nextjs.org/
