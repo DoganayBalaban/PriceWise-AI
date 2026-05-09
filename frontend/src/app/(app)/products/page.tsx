@@ -2,8 +2,20 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import {
+  Box,
+  ChevronRight,
+  ExternalLink,
+  Plus,
+  Search,
+  Trash2,
+  TrendingDown,
+} from "lucide-react";
 import { useProducts, useDeleteProduct } from "@/hooks/use-products";
 import { UrlForm } from "@/components/url-form";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ProductResponse } from "@/types/product";
 
 const fmt = new Intl.NumberFormat("tr-TR", {
@@ -12,99 +24,215 @@ const fmt = new Intl.NumberFormat("tr-TR", {
   maximumFractionDigits: 0,
 });
 
+const PLATFORM_COLORS: Record<string, { bg: string; text: string; label: string }> = {
+  trendyol:    { bg: "hsl(15 100% 95%)",  text: "hsl(15 100% 40%)",  label: "Trendyol"    },
+  hepsiburada: { bg: "hsl(35 100% 94%)",  text: "hsl(28 95% 40%)",   label: "Hepsiburada" },
+  n11:         { bg: "hsl(295 70% 95%)",  text: "hsl(295 70% 40%)",  label: "n11"         },
+};
+
+function PlatformBadge({ platform }: { platform: string }) {
+  const p = PLATFORM_COLORS[platform] ?? {
+    bg: "hsl(var(--muted))",
+    text: "hsl(var(--muted-foreground))",
+    label: platform,
+  };
+  return (
+    <span
+      className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+      style={{ background: p.bg, color: p.text }}
+    >
+      {p.label}
+    </span>
+  );
+}
+
+function ProductThumb({
+  name,
+  imageUrl,
+  size = 48,
+}: {
+  name: string;
+  imageUrl?: string | null;
+  size?: number;
+}) {
+  if (imageUrl) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return (
+      <img
+        src={imageUrl}
+        alt=""
+        className="rounded-lg object-cover shrink-0 bg-muted"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  const hue = [...name].reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
+  return (
+    <div
+      className="rounded-lg flex items-center justify-center shrink-0"
+      style={{
+        width: size,
+        height: size,
+        background: `linear-gradient(135deg, hsl(${hue} 60% 92%), hsl(${(hue + 40) % 360} 60% 88%))`,
+      }}
+    >
+      <Box size={size * 0.4} style={{ color: `hsl(${hue} 60% 35%)` }} />
+    </div>
+  );
+}
+
 export default function ProductsPage() {
   const { data, isLoading } = useProducts();
   const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct();
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [platform, setPlatform] = useState<string>("all");
 
   const products = data?.products ?? [];
-  const filtered = search
-    ? products.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(search.toLowerCase()) ||
-          p.platform?.toLowerCase().includes(search.toLowerCase()) ||
-          p.brand?.toLowerCase().includes(search.toLowerCase())
-      )
-    : products;
+
+  const filtered = products.filter((p) => {
+    const matchSearch =
+      !search ||
+      p.name?.toLowerCase().includes(search.toLowerCase()) ||
+      p.brand?.toLowerCase().includes(search.toLowerCase());
+    const matchPlatform = platform === "all" || p.platform === platform;
+    return matchSearch && matchPlatform;
+  });
 
   function handleDelete(id: string) {
     setDeletingId(id);
-    deleteProduct(id, {
-      onSettled: () => setDeletingId(null),
-    });
+    deleteProduct(id, { onSettled: () => setDeletingId(null) });
   }
 
-  return (
-    <main className="min-h-screen bg-linear-to-br from-slate-900 to-slate-800 text-white">
-      <div className="container mx-auto px-4 py-10 max-w-5xl">
+  const platforms = ["all", ...Array.from(new Set(products.map((p) => p.platform)))];
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Takip Edilen Ürünler</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Yeni ürün ekle veya mevcut ürünleri yönet.
+  return (
+    <div className="p-6 max-w-7xl mx-auto fade-in space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Ürünlerim</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Takip ettiğin ürünleri yönet ve yeni ürün ekle.
           </p>
         </div>
+        <Link
+          href="/products/add"
+          className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+        >
+          <Plus size={14} />
+          Ürün ekle
+        </Link>
+      </div>
 
-        <section className="mb-8">
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">
-            Ürün Ekle
-          </h2>
-          <UrlForm />
-        </section>
+      {/* Add URL */}
+      <section>
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+          Yeni Ürün Ekle
+        </h2>
+        <UrlForm />
+      </section>
 
-        <section>
-          <div className="flex items-center justify-between mb-3 gap-4">
-            <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider shrink-0">
-              Ürünler
-              {!isLoading && (
-                <span className="ml-2 text-slate-500 font-normal normal-case">
-                  ({filtered.length})
-                </span>
-              )}
-            </h2>
-            <input
-              type="text"
-              placeholder="Ara..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-1.5 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
-            />
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Ürün, marka..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full h-9 pl-9 pr-3 rounded-lg border border-input bg-background text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors"
+          />
+        </div>
+
+        <div className="flex items-center gap-1">
+          {platforms.map((pl) => (
+            <button
+              key={pl}
+              onClick={() => setPlatform(pl)}
+              className={`h-8 px-3 rounded-lg text-xs font-medium transition-colors ${
+                platform === pl
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border hover:bg-muted text-muted-foreground"
+              }`}
+            >
+              {pl === "all" ? "Tümü" : (PLATFORM_COLORS[pl]?.label ?? pl)}
+            </button>
+          ))}
+        </div>
+
+        {!isLoading && (
+          <span className="text-xs text-muted-foreground ml-auto">{filtered.length} ürün</span>
+        )}
+      </div>
+
+      {/* Table */}
+      <Card className="overflow-hidden">
+        {isLoading && (
+          <div className="divide-y divide-border">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="p-4 flex items-center gap-3">
+                <Skeleton className="w-12 h-12 rounded-lg shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Skeleton className="h-3.5 w-56" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-5 w-16" />
+              </div>
+            ))}
           </div>
+        )}
 
-          {isLoading && (
-            <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-20 rounded-xl bg-slate-800/60 border border-slate-700 animate-pulse" />
-              ))}
+        {!isLoading && filtered.length === 0 && (
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
+              <Box size={20} className="text-muted-foreground" />
             </div>
-          )}
+            <p className="text-sm font-medium mb-1">
+              {search || platform !== "all" ? "Sonuç bulunamadı" : "Henüz ürün yok"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {search || platform !== "all"
+                ? "Farklı bir arama veya filtre dene."
+                : "Yukarıdaki forma bir ürün URL'si yapıştırarak başla."}
+            </p>
+          </div>
+        )}
 
-          {!isLoading && filtered.length === 0 && (
-            <div className="text-center py-12 text-slate-500 bg-slate-800/30 rounded-xl border border-slate-700 border-dashed">
-              {search ? "Arama sonucu bulunamadı." : "Henüz ürün eklenmemiş. Yukarıdan bir URL yapıştır!"}
-            </div>
-          )}
-
-          {!isLoading && filtered.length > 0 && (
-            <div className="space-y-2">
+        {!isLoading && filtered.length > 0 && (
+          <table className="w-full">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-wider text-muted-foreground text-left border-b border-border">
+                <th className="px-4 py-3 font-medium">Ürün</th>
+                <th className="px-4 py-3 font-medium">Fiyat</th>
+                <th className="px-4 py-3 font-medium hidden sm:table-cell">İndirim</th>
+                <th className="px-4 py-3 font-medium hidden md:table-cell">Stok</th>
+                <th className="px-4 py-3 font-medium hidden lg:table-cell">Eklenme</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
               {filtered.map((p) => (
-                <ProductCard
+                <ProductRow
                   key={p.id}
                   product={p}
                   onDelete={() => handleDelete(p.id)}
                   isDeleting={deletingId === p.id && isDeleting}
                 />
               ))}
-            </div>
-          )}
-        </section>
-      </div>
-    </main>
+            </tbody>
+          </table>
+        )}
+      </Card>
+    </div>
   );
 }
 
-function ProductCard({
+function ProductRow({
   product: p,
   onDelete,
   isDeleting,
@@ -114,87 +242,104 @@ function ProductCard({
   isDeleting: boolean;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3 bg-slate-800/60 border border-slate-700 rounded-xl hover:border-slate-600 transition-colors group">
-      <Link href={`/products/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-        {p.image_url ? (
-          <img
-            src={p.image_url}
-            alt={p.name ?? ""}
-            className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-slate-700"
-          />
-        ) : (
-          <div className="w-12 h-12 rounded-lg bg-slate-700 flex-shrink-0 flex items-center justify-center text-slate-500 text-xs">
-            📦
+    <tr className="border-t border-border hover:bg-muted/40 transition-colors group">
+      <td className="px-4 py-3">
+        <Link href={`/products/${p.id}`} className="flex items-center gap-3">
+          <ProductThumb name={p.name ?? p.url} imageUrl={p.image_url} size={48} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <PlatformBadge platform={p.platform} />
+            </div>
+            <div className="text-sm font-medium truncate max-w-[200px]">
+              {p.name ?? p.url}
+            </div>
+            {p.brand && (
+              <div className="text-xs text-muted-foreground">{p.brand}</div>
+            )}
+          </div>
+        </Link>
+      </td>
+
+      <td className="px-4 py-3">
+        <div className="text-sm font-semibold">
+          {p.latest_price ? fmt.format(p.latest_price.price) : "—"}
+        </div>
+        {p.latest_price?.original_price && (
+          <div className="text-xs text-muted-foreground line-through">
+            {fmt.format(p.latest_price.original_price)}
           </div>
         )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm text-white truncate font-medium">{p.name ?? p.url}</p>
-          <div className="flex items-center gap-2 mt-0.5">
-            <span className="text-xs text-slate-400 capitalize">{p.platform}</span>
-            {p.brand && (
-              <>
-                <span className="text-slate-600">·</span>
-                <span className="text-xs text-slate-400">{p.brand}</span>
-              </>
-            )}
-            {p.category && (
-              <>
-                <span className="text-slate-600">·</span>
-                <span className="text-xs text-slate-500 truncate">{p.category}</span>
-              </>
-            )}
-          </div>
-        </div>
-      </Link>
+      </td>
 
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <div className="text-right">
-          <p className="text-sm font-semibold text-white">
-            {p.latest_price ? fmt.format(p.latest_price.price) : "—"}
-          </p>
-          {p.latest_price?.discount_pct ? (
-            <p className="text-xs text-emerald-400">
-              %{p.latest_price.discount_pct.toFixed(0)} indirim
-            </p>
-          ) : (
-            <p className="text-xs text-slate-500">
-              {p.latest_price?.in_stock ? "Stokta var" : "Stok yok"}
-            </p>
-          )}
-        </div>
+      <td className="px-4 py-3 hidden sm:table-cell">
+        {p.latest_price?.discount_pct ? (
+          <span className="inline-flex items-center gap-0.5 text-xs font-medium text-success">
+            <TrendingDown size={11} />
+            %{p.latest_price.discount_pct.toFixed(0)}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </td>
 
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Link
-            href={`/products/${p.id}`}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
-            title="Detay"
+      <td className="px-4 py-3 hidden md:table-cell">
+        {p.latest_price ? (
+          <Badge
+            variant="outline"
+            className={`text-[10px] ${
+              p.latest_price.in_stock
+                ? "border-success/30 text-success"
+                : "border-destructive/30 text-destructive"
+            }`}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-              <polyline points="15 3 21 3 21 9"/>
-              <line x1="10" y1="14" x2="21" y2="3"/>
-            </svg>
+            {p.latest_price.in_stock ? "Stokta" : "Tükendi"}
+          </Badge>
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        )}
+      </td>
+
+      <td className="px-4 py-3 hidden lg:table-cell">
+        <span className="text-xs text-muted-foreground">
+          {new Date(p.created_at).toLocaleDateString("tr-TR", {
+            day: "numeric",
+            month: "short",
+          })}
+        </span>
+      </td>
+
+      <td className="px-4 py-3 text-right">
+        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            href={p.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="Sayfayı aç"
+          >
+            <ExternalLink size={13} />
           </Link>
           <button
             onClick={onDelete}
             disabled={isDeleting}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-colors disabled:opacity-50"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
             title="Sil"
           >
             {isDeleting ? (
-              <span className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin block" />
+              <span className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin block" />
             ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6"/>
-                <path d="M14 11v6"/>
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-              </svg>
+              <Trash2 size={13} />
             )}
           </button>
+          <Link
+            href={`/products/${p.id}`}
+            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <ChevronRight size={14} />
+          </Link>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
