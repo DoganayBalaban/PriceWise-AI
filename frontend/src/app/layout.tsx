@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
-import { Header } from "@/components/header";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -28,15 +27,13 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      lang="tr"
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
-        <Toaster theme="dark" position="top-right" richColors />
-        <Providers>
-          <Header />
-          {children}
-        </Providers>
+      <body className="min-h-full antialiased">
+        <Toaster theme="system" position="top-right" richColors />
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
