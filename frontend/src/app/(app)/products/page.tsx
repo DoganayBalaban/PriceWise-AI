@@ -12,7 +12,6 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { useProducts, useDeleteProduct } from "@/hooks/use-products";
-import { UrlForm } from "@/components/url-form";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -125,14 +124,6 @@ export default function ProductsPage() {
         </Link>
       </div>
 
-      {/* Add URL */}
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-          Yeni Ürün Ekle
-        </h2>
-        <UrlForm />
-      </section>
-
       {/* Filters */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px] max-w-xs">
@@ -198,7 +189,7 @@ export default function ProductsPage() {
             <p className="text-xs text-muted-foreground">
               {search || platform !== "all"
                 ? "Farklı bir arama veya filtre dene."
-                : "Yukarıdaki forma bir ürün URL'si yapıştırarak başla."}
+                : "\"Ürün Ekle\" sayfasından bir ürün URL'si yapıştırarak başla."}
             </p>
           </div>
         )}
