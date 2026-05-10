@@ -11,6 +11,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { usePriceHistory, usePriceStats } from "@/hooks/use-price-history";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const DAY_OPTIONS = [
   { label: "30G", value: 30 },
@@ -43,9 +45,9 @@ function CustomTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-slate-800 border border-slate-600 rounded-lg px-3 py-2 text-sm">
-      <p className="text-slate-400">{label}</p>
-      <p className="text-white font-semibold">{formatPrice(payload[0].value)}</p>
+    <div className="bg-card border border-border rounded-lg px-3 py-2 text-sm shadow-md">
+      <p className="text-muted-foreground">{label}</p>
+      <p className="text-foreground font-semibold">{formatPrice(payload[0].value)}</p>
     </div>
   );
 }
@@ -68,9 +70,9 @@ export function PriceChart({ productId }: PriceChartProps) {
   }));
 
   return (
-    <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-4">
+    <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Fiyat Geçmişi</h2>
+        <h2 className="text-lg font-semibold">Fiyat Geçmişi</h2>
         <div className="flex gap-1">
           {DAY_OPTIONS.map((opt) => (
             <button
@@ -78,8 +80,8 @@ export function PriceChart({ productId }: PriceChartProps) {
               onClick={() => setDays(opt.value)}
               className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                 days === opt.value
-                  ? "bg-blue-600 text-white"
-                  : "text-slate-400 hover:text-white hover:bg-slate-700"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
               }`}
             >
               {opt.label}
@@ -89,24 +91,24 @@ export function PriceChart({ productId }: PriceChartProps) {
       </div>
 
       {isLoading ? (
-        <div className="h-48 bg-slate-700/30 rounded-lg animate-pulse" />
+        <div className="h-48 bg-muted/30 rounded-lg animate-pulse" />
       ) : !chartData || chartData.length === 0 ? (
-        <div className="h-48 flex items-center justify-center text-slate-500 text-sm">
+        <div className="h-48 flex items-center justify-center text-muted-foreground text-sm">
           Bu dönem için veri yok
         </div>
       ) : (
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
             <XAxis
               dataKey="date"
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               tickFormatter={(v) => `₺${v.toLocaleString("tr-TR")}`}
-              tick={{ fill: "#94a3b8", fontSize: 12 }}
+              tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
               width={70}
@@ -115,37 +117,40 @@ export function PriceChart({ productId }: PriceChartProps) {
             <Line
               type="monotone"
               dataKey="price"
-              stroke="#3b82f6"
+              stroke="hsl(var(--primary))"
               strokeWidth={2}
               dot={chartData.length <= 10}
-              activeDot={{ r: 4, fill: "#3b82f6" }}
+              activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
             />
           </LineChart>
         </ResponsiveContainer>
       )}
 
       {stats && stats.data_points > 0 && (
-        <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-700">
-          <div className="text-center">
-            <p className="text-xs text-slate-500 mb-1">En Düşük</p>
-            <p className="text-sm font-semibold text-green-400">
-              {stats.min_price != null ? formatPrice(stats.min_price) : "—"}
-            </p>
+        <>
+          <Separator />
+          <div className="grid grid-cols-3 gap-3">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-1">En Düşük</p>
+              <p className="text-sm font-semibold text-success">
+                {stats.min_price != null ? formatPrice(stats.min_price) : "—"}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-1">Ortalama</p>
+              <p className="text-sm font-semibold text-foreground">
+                {stats.avg_price != null ? formatPrice(stats.avg_price) : "—"}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground mb-1">En Yüksek</p>
+              <p className="text-sm font-semibold text-destructive">
+                {stats.max_price != null ? formatPrice(stats.max_price) : "—"}
+              </p>
+            </div>
           </div>
-          <div className="text-center">
-            <p className="text-xs text-slate-500 mb-1">Ortalama</p>
-            <p className="text-sm font-semibold text-slate-300">
-              {stats.avg_price != null ? formatPrice(stats.avg_price) : "—"}
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-xs text-slate-500 mb-1">En Yüksek</p>
-            <p className="text-sm font-semibold text-red-400">
-              {stats.max_price != null ? formatPrice(stats.max_price) : "—"}
-            </p>
-          </div>
-        </div>
+        </>
       )}
-    </div>
+    </Card>
   );
 }
