@@ -43,13 +43,27 @@ class Settings(BaseSettings):
 
     # App
     APP_URL: str = "http://localhost:3000"
+    # Comma-separated extra CORS origins for production (e.g. https://pricewise.vercel.app)
+    CORS_ORIGINS: str = ""
 
     # Scraper
     PLAYWRIGHT_HEADLESS: bool = True
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
-        return self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # asyncpg uses ?ssl=require; Neon connection strings ship with ?sslmode=require
+        url = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+        url = url.replace("sslmode=require", "ssl=require")
+        return url
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        origins = ["http://localhost:3000"]
+        for o in self.CORS_ORIGINS.split(","):
+            o = o.strip()
+            if o:
+                origins.append(o)
+        return origins
 
 
 settings = Settings()
