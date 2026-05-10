@@ -2,6 +2,8 @@
 
 import { useRef, useState } from "react";
 import type { AgentDecision, AgentDecisionResult } from "@/types/agent";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -24,18 +26,18 @@ const STEPS: Omit<Step, "status">[] = [
 const DECISION_BADGE: Record<AgentDecision, { label: string; color: string; bar: string }> = {
   BUY: {
     label: "AL",
-    color: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
-    bar: "bg-emerald-500",
+    color: "bg-success/10 text-success border border-success/20",
+    bar: "bg-success",
   },
   WAIT: {
     label: "BEKLE",
-    color: "bg-red-500/20 text-red-400 border border-red-500/30",
-    bar: "bg-red-500",
+    color: "bg-destructive/10 text-destructive border border-destructive/20",
+    bar: "bg-destructive",
   },
   LOOK_FOR_ALTERNATIVE: {
     label: "ALTERNATİF ARA",
-    color: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
-    bar: "bg-amber-500",
+    color: "bg-warning/10 text-warning border border-warning/20",
+    bar: "bg-warning",
   },
 };
 
@@ -145,16 +147,16 @@ export function DecisionCard({ productId }: DecisionCardProps) {
 
   if (!started) {
     return (
-      <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6">
+      <Card className="p-6">
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-white">AI Karar Asistanı</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h2 className="text-base font-semibold">AI Karar Asistanı</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Fiyat tahmini ve yorum analizini birleştirerek Al / Bekle kararı üretir
           </p>
         </div>
         <button
           onClick={handleAnalyze}
-          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -173,21 +175,21 @@ export function DecisionCard({ productId }: DecisionCardProps) {
           </svg>
           Karar Al
         </button>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-5">
+    <Card className="p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-white">AI Karar Asistanı</h2>
+        <h2 className="text-base font-semibold">AI Karar Asistanı</h2>
         {streaming ? (
-          <span className="flex items-center gap-1.5 text-xs text-slate-500">
-            <span className="w-3 h-3 border-2 border-slate-600 border-t-blue-400 rounded-full animate-spin" />
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="w-3 h-3 border-2 border-border border-t-primary rounded-full animate-spin" />
             Analiz ediliyor…
           </span>
         ) : (
-          <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+          <span className="text-xs bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full">
             Tamamlandı
           </span>
         )}
@@ -199,11 +201,11 @@ export function DecisionCard({ productId }: DecisionCardProps) {
           <div key={step.node} className="flex items-center gap-3">
             <div className="w-5 h-5 flex items-center justify-center flex-shrink-0">
               {step.status === "running" && (
-                <span className="w-3.5 h-3.5 border-2 border-slate-500 border-t-blue-400 rounded-full animate-spin" />
+                <span className="w-3.5 h-3.5 border-2 border-border border-t-primary rounded-full animate-spin" />
               )}
               {step.status === "done" && (
                 <svg
-                  className="text-emerald-400"
+                  className="text-success"
                   width="14"
                   height="14"
                   viewBox="0 0 24 24"
@@ -217,16 +219,16 @@ export function DecisionCard({ productId }: DecisionCardProps) {
                 </svg>
               )}
               {step.status === "pending" && (
-                <span className="w-2 h-2 rounded-full bg-slate-600" />
+                <span className="w-2 h-2 rounded-full bg-muted-foreground/30" />
               )}
             </div>
             <span
               className={`text-sm transition-colors ${
                 step.status === "done"
-                  ? "text-slate-300"
+                  ? "text-foreground"
                   : step.status === "running"
-                  ? "text-white font-medium"
-                  : "text-slate-500"
+                  ? "text-foreground font-medium"
+                  : "text-muted-foreground"
               }`}
             >
               {step.label}
@@ -237,14 +239,14 @@ export function DecisionCard({ productId }: DecisionCardProps) {
 
       {/* Error */}
       {error && (
-        <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
           {error}
         </div>
       )}
 
       {/* Final result */}
       {result && !streaming && (
-        <div className="space-y-4 pt-4 border-t border-slate-700">
+        <div className="space-y-4 pt-4 border-t border-border">
           <div className="flex items-center justify-between">
             <span
               className={`text-base font-bold px-4 py-1.5 rounded-full ${
@@ -254,24 +256,24 @@ export function DecisionCard({ productId }: DecisionCardProps) {
               {DECISION_BADGE[result.decision]?.label ?? result.decision}
             </span>
             <div className="text-right">
-              <p className="text-xs text-slate-500">Güven skoru</p>
-              <p className="text-xl font-bold text-white">%{result.final_confidence}</p>
+              <p className="text-xs text-muted-foreground">Güven skoru</p>
+              <p className="text-xl font-bold">%{result.final_confidence}</p>
             </div>
           </div>
 
-          <div className="h-2 rounded-full bg-slate-700 overflow-hidden">
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
               className={`h-2 rounded-full transition-all duration-700 ${
-                DECISION_BADGE[result.decision]?.bar ?? "bg-blue-500"
+                DECISION_BADGE[result.decision]?.bar ?? "bg-primary"
               }`}
               style={{ width: `${result.final_confidence}%` }}
             />
           </div>
 
-          <p className="text-sm text-slate-300 leading-relaxed">{result.reasoning}</p>
+          <p className="text-sm text-foreground leading-relaxed">{result.reasoning}</p>
 
           {result.errors.length > 0 && (
-            <div className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 space-y-0.5">
+            <div className="text-xs text-warning bg-warning/10 border border-warning/20 rounded-lg px-3 py-2 space-y-0.5">
               {result.errors.map((e, i) => (
                 <p key={i}>{e}</p>
               ))}
@@ -280,12 +282,12 @@ export function DecisionCard({ productId }: DecisionCardProps) {
 
           <button
             onClick={handleAnalyze}
-            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             Yeniden analiz et
           </button>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

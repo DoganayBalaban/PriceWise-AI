@@ -53,8 +53,8 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
         onClick={() => setOpen(true)}
         className={`flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg border transition-colors ${
           activeAlert
-            ? "bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border-emerald-500/30"
-            : "bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border-amber-500/30"
+            ? "bg-success/10 hover:bg-success/20 text-success border-success/30"
+            : "bg-warning/10 hover:bg-warning/20 text-warning border-warning/30"
         }`}
       >
         <svg
@@ -74,7 +74,7 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
         {activeAlert ? (
           <span className="flex items-center gap-1">
             Alarm Aktif
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
           </span>
         ) : (
           "Alarm Kur"
@@ -83,12 +83,12 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+          <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-base font-semibold text-white">Fiyat Alarmı Kur</h2>
+              <h2 className="text-base font-semibold">Fiyat Alarmı Kur</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -98,7 +98,7 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-xs text-slate-400 mb-1.5">
+                <label className="block text-xs text-muted-foreground mb-1.5">
                   Hedef Fiyat (₺)
                 </label>
                 <input
@@ -106,12 +106,12 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
                   type="number"
                   step="0.01"
                   placeholder="0.00"
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2.5 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent"
                 />
                 {errors.target_price && (
-                  <p className="text-red-400 text-xs mt-1">{errors.target_price.message}</p>
+                  <p className="text-destructive text-xs mt-1">{errors.target_price.message}</p>
                 )}
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Şu anki fiyat: ₺{currentPrice.toLocaleString("tr-TR")}
                 </p>
               </div>
@@ -120,17 +120,17 @@ export function AlertButton({ productId, currentPrice }: AlertButtonProps) {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="flex-1 py-2.5 rounded-lg bg-slate-700 text-slate-300 text-sm hover:bg-slate-600 transition-colors"
+                  className="flex-1 py-2.5 rounded-lg bg-muted text-muted-foreground text-sm hover:bg-muted/80 transition-colors"
                 >
                   İptal
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="flex-1 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isPending && (
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                   )}
                   Alarm Kur
                 </button>

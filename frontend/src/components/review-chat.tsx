@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
+import { Card } from "@/components/ui/card";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
@@ -35,7 +36,7 @@ async function getJwt(): Promise<string | null> {
 }
 
 const POLL_INTERVAL = 5_000;
-const POLL_TIMEOUT = 3 * 60 * 1000; // 3 minutes
+const POLL_TIMEOUT = 3 * 60 * 1000;
 
 export function ReviewChat({ productId }: { productId: string }) {
   const queryClient = useQueryClient();
@@ -159,30 +160,30 @@ export function ReviewChat({ productId }: { productId: string }) {
       : `${status.total} yorum bulundu, AI indeksi hazırlanıyor… (${status.embedded}/${status.total})`;
 
     return (
-      <div className="bg-slate-800/60 border border-slate-700 rounded-2xl p-5">
+      <Card className="p-5">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
             Yorumlara Sor
           </h3>
-          <span className="flex items-center gap-1.5 text-xs text-slate-500">
-            <span className="w-3 h-3 border-2 border-slate-600 border-t-blue-400 rounded-full animate-spin" />
+          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="w-3 h-3 border-2 border-border border-t-primary rounded-full animate-spin" />
             Hazırlanıyor
           </span>
         </div>
-        <p className="text-sm text-slate-500">{label}</p>
-        <p className="text-xs text-slate-600 mt-1">Sayfa açık kaldığı sürece otomatik güncellenecek.</p>
-      </div>
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground/60 mt-1">Sayfa açık kaldığı sürece otomatik güncellenecek.</p>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-slate-800/60 border border-slate-700 rounded-2xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+    <Card className="overflow-hidden p-0">
+      <div className="px-5 py-4 border-b border-border flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-white">Yorumlara Sor</h3>
-          <p className="text-xs text-slate-500 mt-0.5">{status.total} yoruma dayalı AI analizi</p>
+          <h3 className="text-sm font-semibold">Yorumlara Sor</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">{status.total} yoruma dayalı AI analizi</p>
         </div>
-        <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+        <span className="text-xs bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full">
           Hazır
         </span>
       </div>
@@ -191,12 +192,12 @@ export function ReviewChat({ productId }: { productId: string }) {
       <div className="p-4 space-y-4 max-h-[420px] overflow-y-auto">
         {messages.length === 0 && !streaming && (
           <div className="space-y-2">
-            <p className="text-xs text-slate-500 mb-3">Örnek sorular:</p>
+            <p className="text-xs text-muted-foreground mb-3">Örnek sorular:</p>
             {EXAMPLE_QUESTIONS.map((q) => (
               <button
                 key={q}
                 onClick={() => { setInput(q); }}
-                className="block w-full text-left text-xs text-slate-400 hover:text-white bg-slate-700/40 hover:bg-slate-700 px-3 py-2 rounded-lg transition-colors"
+                className="block w-full text-left text-xs text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted px-3 py-2 rounded-lg transition-colors"
               >
                 {q}
               </button>
@@ -207,22 +208,22 @@ export function ReviewChat({ productId }: { productId: string }) {
         {messages.map((msg, i) => (
           <div key={i} className={msg.role === "user" ? "flex justify-end" : "space-y-3"}>
             {msg.role === "user" ? (
-              <div className="bg-blue-600 text-white text-sm px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-[80%]">
+              <div className="bg-primary text-primary-foreground text-sm px-4 py-2.5 rounded-2xl rounded-tr-sm max-w-[80%]">
                 {msg.content}
               </div>
             ) : (
               <>
-                <div className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+                <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                   {msg.content}
                   {msg.reviewsUsed != null && (
-                    <span className="ml-2 text-xs text-slate-500">
+                    <span className="ml-2 text-xs text-muted-foreground">
                       ({msg.reviewsUsed} yorumdan üretildi)
                     </span>
                   )}
                 </div>
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-xs text-slate-500 font-medium">Kaynak yorumlar:</p>
+                    <p className="text-xs text-muted-foreground font-medium">Kaynak yorumlar:</p>
                     <div className="space-y-1.5">
                       {msg.sources.map((src, j) => (
                         <SourceCard key={j} source={src} />
@@ -239,13 +240,13 @@ export function ReviewChat({ productId }: { productId: string }) {
         {streaming && (
           <div className="space-y-1">
             {streamingText ? (
-              <div className="text-sm text-slate-200 leading-relaxed whitespace-pre-wrap">
+              <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
                 {streamingText}
-                <span className="inline-block w-1.5 h-4 bg-blue-400 animate-pulse ml-0.5 align-middle" />
+                <span className="inline-block w-1.5 h-4 bg-primary animate-pulse ml-0.5 align-middle" />
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-slate-500 text-sm">
-                <span className="w-3.5 h-3.5 border-2 border-slate-500 border-t-blue-400 rounded-full animate-spin" />
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <span className="w-3.5 h-3.5 border-2 border-border border-t-primary rounded-full animate-spin" />
                 Yorumlar analiz ediliyor…
               </div>
             )}
@@ -265,15 +266,15 @@ export function ReviewChat({ productId }: { productId: string }) {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleAsk()}
             placeholder="Yorumlara bir şey sor…"
             disabled={streaming}
-            className="flex-1 bg-slate-700/50 border border-slate-600 rounded-lg px-3 py-2.5 text-white text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            className="flex-1 bg-muted/50 border border-border rounded-lg px-3 py-2.5 text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
           />
           <button
             onClick={handleAsk}
             disabled={streaming || !input.trim()}
-            className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
             {streaming ? (
-              <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -283,23 +284,23 @@ export function ReviewChat({ productId }: { productId: string }) {
           </button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
 function SourceCard({ source }: { source: Source }) {
   return (
-    <div className="bg-slate-700/40 border border-slate-600/50 rounded-lg px-3 py-2 text-xs">
+    <div className="bg-muted/40 border border-border rounded-lg px-3 py-2 text-xs">
       <div className="flex items-center gap-2 mb-1">
         {source.rating && (
-          <span className="text-yellow-400">{"★".repeat(source.rating)}{"☆".repeat(5 - source.rating)}</span>
+          <span className="text-warning">{"★".repeat(source.rating)}{"☆".repeat(5 - source.rating)}</span>
         )}
         {source.review_date && (
-          <span className="text-slate-500">{source.review_date}</span>
+          <span className="text-muted-foreground">{source.review_date}</span>
         )}
-        <span className="ml-auto text-slate-600">%{Math.round(source.score * 100)} eşleşme</span>
+        <span className="ml-auto text-muted-foreground">%{Math.round(source.score * 100)} eşleşme</span>
       </div>
-      <p className="text-slate-300 line-clamp-2">{source.text}</p>
+      <p className="text-foreground line-clamp-2">{source.text}</p>
     </div>
   );
 }
