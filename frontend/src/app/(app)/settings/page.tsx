@@ -1,15 +1,18 @@
 "use client";
 
 import { toast } from "sonner";
+import { Activity, ArrowRight, CreditCard, ExternalLink, User, Zap } from "lucide-react";
 import { useMe, usePortal } from "@/hooks/use-me";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
-const PLAN_LABELS: Record<string, { label: string; color: string }> = {
-  free: { label: "Free", color: "bg-slate-700 text-slate-300" },
-  pro: { label: "Pro", color: "bg-blue-500/20 text-blue-400 border border-blue-500/30" },
-  business: { label: "Business", color: "bg-purple-500/20 text-purple-400 border border-purple-500/30" },
+const PLAN_META: Record<string, { label: string; color: string; bg: string }> = {
+  free:     { label: "Free",     color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  pro:      { label: "Pro",      color: "hsl(221 83% 53%)",             bg: "hsl(221 83% 53% / 0.1)" },
+  business: { label: "Business", color: "hsl(262 83% 58%)",             bg: "hsl(262 83% 58% / 0.1)" },
 };
-
-const fmt = new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", maximumFractionDigits: 0 });
 
 export default function SettingsPage() {
   const { data: me, isLoading } = useMe();
@@ -21,112 +24,253 @@ export default function SettingsPage() {
     });
   }
 
+  /* ── Loading ── */
   if (isLoading) {
     return (
-      <main className="container mx-auto px-4 py-8 max-w-2xl space-y-4 animate-pulse">
-        <div className="h-8 bg-slate-800 rounded w-32" />
-        <div className="bg-slate-800/60 border border-slate-700 rounded-2xl h-48" />
-      </main>
+      <div className="p-6 max-w-2xl mx-auto space-y-6">
+        <Skeleton className="h-7 w-28" />
+        <Card className="p-6 space-y-4">
+          <Skeleton className="h-3 w-16" />
+          <div className="flex items-center justify-between">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-36" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+            <Skeleton className="h-6 w-14 rounded-full" />
+          </div>
+        </Card>
+        <Card className="p-6 space-y-4">
+          <Skeleton className="h-3 w-12" />
+          <Skeleton className="h-2 w-full rounded-full" />
+          <Skeleton className="h-2 w-full rounded-full" />
+        </Card>
+      </div>
     );
   }
 
   if (!me) return null;
 
-  const plan = PLAN_LABELS[me.plan] ?? PLAN_LABELS.free;
-  const quotaPct = me.queries_limit > 0 ? Math.min((me.queries_used / me.queries_limit) * 100, 100) : 0;
+  const plan = PLAN_META[me.plan] ?? PLAN_META.free;
+  const quotaPct =
+    me.queries_limit > 0
+      ? Math.min((me.queries_used / me.queries_limit) * 100, 100)
+      : 0;
+  const quotaNear = quotaPct >= 80;
 
   return (
-    <main className="container mx-auto px-4 py-8 max-w-2xl space-y-6">
-      <h1 className="text-xl font-semibold text-white">Ayarlar</h1>
+    <div className="p-6 max-w-2xl mx-auto fade-in space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Ayarlar</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">Hesap ve abonelik bilgilerin.</p>
+      </div>
 
-      {/* Account */}
-      <section className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-4">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Hesap</h2>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-white font-medium">{me.name ?? "—"}</p>
-            <p className="text-sm text-slate-400">{me.email}</p>
+      {/* Account card */}
+      <Card className="p-6">
+        <SectionLabel icon={<User size={13} />} label="Hesap" />
+        <Separator className="my-4" />
+
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+              {(me.name ?? me.email)?.[0]?.toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-medium">{me.name ?? "—"}</p>
+              <p className="text-xs text-muted-foreground">{me.email}</p>
+            </div>
           </div>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${plan.color}`}>
+          <span
+            className="inline-flex items-center h-6 px-2.5 rounded-full text-xs font-semibold"
+            style={{ background: plan.bg, color: plan.color }}
+          >
             {plan.label}
           </span>
         </div>
-      </section>
+      </Card>
 
-      {/* Quota */}
-      <section className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-4">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Kota</h2>
+      {/* Quota card */}
+      <Card className="p-6">
+        <SectionLabel icon={<Activity size={13} />} label="Kullanım Kotası" />
+        <Separator className="my-4" />
 
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">AI Analiz</span>
-            <span className="text-white">
-              {me.queries_used} / {me.queries_limit}
-            </span>
+        <div className="space-y-5">
+          {/* AI Analiz */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">AI Analiz</span>
+              <span className={`font-medium ${quotaNear ? "text-warning" : ""}`}>
+                {me.queries_used} / {me.queries_limit}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${quotaPct}%`,
+                  background:
+                    quotaPct >= 90
+                      ? "hsl(var(--destructive))"
+                      : quotaPct >= 70
+                      ? "hsl(var(--warning))"
+                      : "hsl(var(--primary))",
+                }}
+              />
+            </div>
+            {quotaNear && (
+              <p className="text-xs text-warning">
+                Kotanın %{Math.round(quotaPct)}&apos;ini kullandın. Daha fazlası için Pro&apos;ya geç.
+              </p>
+            )}
           </div>
-          <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                quotaPct >= 90 ? "bg-red-500" : quotaPct >= 70 ? "bg-amber-500" : "bg-blue-500"
-              }`}
-              style={{ width: `${quotaPct}%` }}
-            />
-          </div>
 
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-400">Takip Edilen Ürün</span>
-            <span className="text-white">
-              {me.product_count} / {me.product_limit === -1 ? "∞" : me.product_limit}
-            </span>
+          {/* Ürün takip */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Takip Edilen Ürün</span>
+              <span className="font-medium">
+                {me.product_count} / {me.product_limit === -1 ? "∞" : me.product_limit}
+              </span>
+            </div>
+            {me.product_limit !== -1 && (
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-primary/70 transition-all"
+                  style={{
+                    width: `${Math.min((me.product_count / me.product_limit) * 100, 100)}%`,
+                  }}
+                />
+              </div>
+            )}
           </div>
         </div>
-      </section>
+      </Card>
 
-      {/* Subscription */}
-      <section className="bg-slate-800/60 border border-slate-700 rounded-2xl p-6 space-y-4">
-        <h2 className="text-sm font-medium text-slate-400 uppercase tracking-wide">Abonelik</h2>
+      {/* Subscription card */}
+      <Card className="p-6">
+        <SectionLabel icon={<CreditCard size={13} />} label="Abonelik" />
+        <Separator className="my-4" />
 
         {me.plan === "free" ? (
-          <div className="space-y-3">
-            <p className="text-sm text-slate-400">
-              Pro&apos;ya geçerek daha fazla analiz ve ürün takibi yapabilirsin.
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Pro&apos;ya geçerek aylık 100 analiz, RAG yorum sorgusu ve LangGraph karar
+              agent&apos;ına erişebilirsin.
             </p>
-            <div className="flex gap-2">
-              <a
-                href="/dashboard"
-                className="flex-1 text-center text-sm py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors"
-              >
-                Pro&apos;ya Geç — ₺199/ay
-              </a>
-              <a
-                href="/dashboard"
-                className="flex-1 text-center text-sm py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
-              >
-                Business — ₺799/ay
-              </a>
+
+            <div className="grid grid-cols-2 gap-3">
+              <PlanCard
+                name="Pro"
+                price="₺199"
+                features={["100 analiz/ay", "RAG yorum sorgusu", "Karar agent'ı"]}
+                color="hsl(221 83% 53%)"
+              />
+              <PlanCard
+                name="Business"
+                price="₺799"
+                features={["Sınırsız analiz", "API erişimi", "Öncelikli destek"]}
+                color="hsl(262 83% 58%)"
+              />
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-white text-sm font-medium">{plan.label} Plan</p>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <div className="flex items-center gap-2 mb-0.5">
+                <p className="text-sm font-medium">{plan.label} Plan</p>
+                <Badge variant="outline" className="text-[10px]">Aktif</Badge>
+              </div>
+              <p className="text-xs text-muted-foreground">
                 Plan değişikliği veya iptal için Lemon Squeezy portalına git.
               </p>
             </div>
             <button
               onClick={handlePortal}
               disabled={isPortalPending}
-              className="text-sm px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors disabled:opacity-50 shrink-0"
             >
-              {isPortalPending && (
-                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              {isPortalPending ? (
+                <span className="w-3 h-3 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+              ) : (
+                <ExternalLink size={13} />
               )}
-              Aboneliği Yönet ↗
+              Aboneliği Yönet
             </button>
           </div>
         )}
-      </section>
-    </main>
+      </Card>
+
+      {/* Danger zone */}
+      <Card className="p-6 border-destructive/20">
+        <SectionLabel icon={<Zap size={13} />} label="Tehlikeli Alan" />
+        <Separator className="my-4" />
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium">Hesabı Sil</p>
+            <p className="text-xs text-muted-foreground">
+              Tüm veriler kalıcı olarak silinir. Bu işlem geri alınamaz.
+            </p>
+          </div>
+          <button className="inline-flex items-center gap-1.5 h-9 px-3 rounded-lg border border-destructive/30 text-destructive text-sm font-medium hover:bg-destructive/5 transition-colors">
+            Hesabı Sil
+          </button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/* ── Sub-components ───────────────────────────────────────── */
+
+function SectionLabel({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      {icon}
+      {label}
+    </div>
+  );
+}
+
+function PlanCard({
+  name,
+  price,
+  features,
+  color,
+}: {
+  name: string;
+  price: string;
+  features: string[];
+  color: string;
+}) {
+  return (
+    <div
+      className="rounded-xl border p-4 space-y-3"
+      style={{ borderColor: `${color}33` }}
+    >
+      <div>
+        <div className="text-xs font-semibold uppercase tracking-wider mb-0.5" style={{ color }}>
+          {name}
+        </div>
+        <div className="text-xl font-semibold">
+          {price}
+          <span className="text-xs font-normal text-muted-foreground">/ay</span>
+        </div>
+      </div>
+      <ul className="space-y-1">
+        {features.map((f) => (
+          <li key={f} className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <span className="w-1 h-1 rounded-full shrink-0" style={{ background: color }} />
+            {f}
+          </li>
+        ))}
+      </ul>
+      <button
+        className="w-full h-8 rounded-lg text-xs font-medium inline-flex items-center justify-center gap-1 transition-colors"
+        style={{ background: `${color}1A`, color }}
+      >
+        Geç
+        <ArrowRight size={11} />
+      </button>
+    </div>
   );
 }
