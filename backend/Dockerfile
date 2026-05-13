@@ -1,6 +1,9 @@
 # Playwright'ın Python için optimize edilmiş resmi imajını kullanıyoruz
 FROM mcr.microsoft.com/playwright/python:v1.45.0-jammy
 
+# Tarayıcıları sabit bir yola kur — kullanıcıdan bağımsız olarak bulunabilsin
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 # Çalışma dizinini ayarla
 WORKDIR /app
 
@@ -8,7 +11,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Sadece ihtiyacımız olan tarayıcıyı (Chromium) kur
+# pip ile kurulan playwright sürümü için doğru chromium'u indir
 RUN playwright install chromium
 
 # Proje dosyalarını kopyala
