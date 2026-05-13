@@ -12,9 +12,9 @@ import {
   Layout,
   Plus,
   Settings,
-  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/wave-w-logo";
 
 const NAV_GROUPS = [
   {
@@ -37,24 +37,15 @@ const NAV_GROUPS = [
   },
 ];
 
-function Logo() {
-  return (
-    <Link href="/" className="flex items-center gap-2">
-      <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-        <Zap size={14} className="text-primary-foreground" />
-      </div>
-      <span className="font-semibold text-sm tracking-tight">PriceWise AI</span>
-    </Link>
-  );
-}
-
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
     <aside className="w-[240px] shrink-0 border-r border-border bg-card flex flex-col h-full">
       <div className="p-4 border-b border-border">
-        <Logo />
+        <Link href="/">
+          <Logo size={26} />
+        </Link>
       </div>
 
       <nav className="flex-1 overflow-y-auto p-3 space-y-4">

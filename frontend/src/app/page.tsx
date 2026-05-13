@@ -13,9 +13,9 @@ import {
   Sparkles,
   Terminal,
   TrendingUp,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
+import { Logo, WaveW } from "@/components/wave-w-logo";
 
 export default function LandingPage() {
   return (
@@ -388,31 +388,13 @@ export default function LandingPage() {
                 Türkiye&apos;nin ilk AI destekli alışveriş asistanı. Doğru ürünü, doğru fiyata, doğru zamanda al.
               </p>
               <div className="mt-5 flex items-center gap-3">
-                <a
-                  href="https://twitter.com"
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors overflow-hidden bg-card"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href="https://twitter.com" className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors overflow-hidden bg-card">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://cdn.brandfetch.io/idS5WhqBbM/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1692089092800"
-                    alt="X logo"
-                    className="w-5 h-5 object-contain"
-                  />
+                  <img src="https://cdn.brandfetch.io/idS5WhqBbM/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1692089092800" alt="X" className="w-4 h-4 object-contain" />
                 </a>
-                <a
-                  href="https://github.com"
-                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors overflow-hidden bg-card"
-                  target="_blank"
-                  rel="noreferrer"
-                >
+                <a href="https://github.com" className="w-8 h-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors overflow-hidden bg-card">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="https://cdn.brandfetch.io/idZAyF9rlg/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980739"
-                    alt="GitHub logo"
-                    className="w-4 h-4 object-contain"
-                  />
+                  <img src="https://cdn.brandfetch.io/idZAyF9rlg/theme/dark/symbol.svg?c=1bxid64Mup7aczewSAYMX&t=1719469980739" alt="GitHub" className="w-4 h-4 object-contain" />
                 </a>
               </div>
             </div>
@@ -471,16 +453,6 @@ export default function LandingPage() {
   );
 }
 
-function Logo() {
-  return (
-    <Link href="/" className="flex items-center gap-2">
-      <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-        <Zap size={14} className="text-primary-foreground" />
-      </div>
-      <span className="font-semibold text-sm tracking-tight text-foreground">PriceWise AI</span>
-    </Link>
-  );
-}
 
 const FEATURES = [
   {
