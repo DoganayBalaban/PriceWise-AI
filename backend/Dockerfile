@@ -16,4 +16,4 @@ COPY . .
 
 # Render genellikle 10000 portunu bekler, 
 # ancak ortam değişkeninden okuması en sağlıklıdır.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
+CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000}"]
