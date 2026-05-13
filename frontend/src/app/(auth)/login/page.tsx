@@ -7,7 +7,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowRight, Check, Sparkles, Zap } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
+import { Logo } from "@/components/wave-w-logo";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -131,11 +132,8 @@ export function AuthShell({
       {/* Left: form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-sm">
-          <Link href="/" className="flex items-center gap-2 mb-10">
-            <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
-              <Zap size={14} className="text-primary-foreground" />
-            </div>
-            <span className="font-semibold text-sm tracking-tight">PriceWise AI</span>
+          <Link href="/" className="mb-10 inline-block">
+            <Logo size={26} />
           </Link>
           <h1 className="text-3xl font-semibold tracking-tight mb-2">{title}</h1>
           <p className="text-sm text-muted-foreground mb-8">{subtitle}</p>

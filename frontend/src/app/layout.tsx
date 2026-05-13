@@ -15,9 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PriceWise AI — Smart Price Tracking",
+  title: "PriceWise AI — Akıllı Fiyat Takibi",
   description:
-    "AI-powered price tracking and comparison. Get alerts when prices drop.",
+    "Türkiye'nin ilk AI destekli alışveriş asistanı. Doğru ürünü, doğru fiyata, doğru zamanda al.",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
