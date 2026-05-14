@@ -2,20 +2,35 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Check, X } from "lucide-react";
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { AuthShell } from "@/app/(auth)/login/page";
 import { cn } from "@/lib/utils";
 
-const schema = z.object({
-  name: z.string().min(2, "Ad en az 2 karakter olmalı"),
-  email: z.string().email("Geçerli bir e-posta girin"),
-  password: z.string().min(8, "Şifre en az 8 karakter olmalı"),
-});
+const passwordSchema = z
+  .string()
+  .min(8, "En az 8 karakter")
+  .regex(/[A-Z]/, "En az bir büyük harf")
+  .regex(/[0-9]/, "En az bir rakam")
+  .regex(/[^A-Za-z0-9]/, "En az bir özel karakter");
+
+const schema = z
+  .object({
+    name: z.string().min(2, "Ad en az 2 karakter olmalı"),
+    email: z.string().email("Geçerli bir e-posta adresi girin"),
+    password: passwordSchema,
+    confirmPassword: z.string(),
+    terms: z.boolean().refine((v) => v === true, "Devam etmek için kabul etmelisiniz"),
+  })
+  .refine((d) => d.password === d.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Şifreler eşleşmiyor",
+  });
 
 type FormValues = z.infer<typeof schema>;
 
@@ -24,21 +39,40 @@ const inputCls =
 
 const errorInputCls = "border-destructive focus:ring-destructive/50";
 
+const PASSWORD_RULES = [
+  { label: "En az 8 karakter", test: (v: string) => v.length >= 8 },
+  { label: "En az bir büyük harf", test: (v: string) => /[A-Z]/.test(v) },
+  { label: "En az bir rakam", test: (v: string) => /[0-9]/.test(v) },
+  { label: "En az bir özel karakter", test: (v: string) => /[^A-Za-z0-9]/.test(v) },
+];
+
 export default function RegisterPage() {
   const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
+
+  const passwordValue = useWatch({ control, name: "password", defaultValue: "" });
+  const passwordTouched = passwordValue.length > 0;
 
   async function onSubmit({ name, email, password }: FormValues) {
     const { error } = await authClient.signUp.email({ name, email, password });
     if (error) {
-      toast.error(error.message ?? "Kayıt başarısız");
+      const msg =
+        error.message?.includes("already exists") || error.message?.includes("already in use")
+          ? "Bu e-posta adresi zaten kayıtlı"
+          : error.message?.includes("password")
+          ? "Şifre gereksinimleri karşılanmıyor"
+          : "Kayıt sırasında bir hata oluştu. Lütfen tekrar deneyin.";
+      toast.error(msg);
     } else {
-      toast.success("Hesabın oluşturuldu!");
+      toast.success("Hesabın oluşturuldu! Hoş geldin 🎉");
       router.push("/dashboard");
       router.refresh();
     }
@@ -69,6 +103,7 @@ export default function RegisterPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        {/* Name */}
         <div>
           <label className="text-xs font-medium mb-1.5 block">Ad Soyad</label>
           <input
@@ -83,6 +118,7 @@ export default function RegisterPage() {
           )}
         </div>
 
+        {/* Email */}
         <div>
           <label className="text-xs font-medium mb-1.5 block">E-posta</label>
           <input
@@ -97,26 +133,95 @@ export default function RegisterPage() {
           )}
         </div>
 
+        {/* Password */}
         <div>
           <label className="text-xs font-medium mb-1.5 block">Şifre</label>
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="En az 8 karakter"
-            autoComplete="new-password"
-            className={cn(inputCls, errors.password && errorInputCls)}
-          />
-          {errors.password && (
+          <div className="relative">
+            <input
+              {...register("password")}
+              type={showPassword ? "text" : "password"}
+              placeholder="Güçlü bir şifre oluştur"
+              autoComplete="new-password"
+              className={cn(inputCls, "pr-10", errors.password && errorInputCls)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+
+          {/* Password rules checklist */}
+          {passwordTouched && (
+            <ul className="mt-2 space-y-1">
+              {PASSWORD_RULES.map((rule) => {
+                const ok = rule.test(passwordValue);
+                return (
+                  <li key={rule.label} className={cn("flex items-center gap-1.5 text-xs transition-colors", ok ? "text-green-600" : "text-muted-foreground")}>
+                    {ok
+                      ? <Check size={11} className="shrink-0" />
+                      : <X size={11} className="shrink-0 text-muted-foreground/50" />
+                    }
+                    {rule.label}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {errors.password && !passwordTouched && (
             <p className="text-destructive text-xs mt-1">{errors.password.message}</p>
           )}
         </div>
 
+        {/* Confirm password */}
+        <div>
+          <label className="text-xs font-medium mb-1.5 block">Şifre Tekrar</label>
+          <div className="relative">
+            <input
+              {...register("confirmPassword")}
+              type={showConfirm ? "text" : "password"}
+              placeholder="Şifreni tekrar gir"
+              autoComplete="new-password"
+              className={cn(inputCls, "pr-10", errors.confirmPassword && errorInputCls)}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              tabIndex={-1}
+            >
+              {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-destructive text-xs mt-1">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        {/* Terms */}
         <label className="flex items-start gap-2 text-xs text-muted-foreground py-1 cursor-pointer">
-          <input type="checkbox" defaultChecked className="rounded mt-0.5" />
+          <input
+            {...register("terms")}
+            type="checkbox"
+            className="rounded mt-0.5 shrink-0"
+          />
           <span>
-            Kullanım Şartları ve Gizlilik Politikası&apos;nı kabul ediyorum.
+            <Link href="/terms" className="text-primary hover:underline font-medium" target="_blank">
+              Kullanım Şartları
+            </Link>
+            {" "}ve{" "}
+            <Link href="/privacy" className="text-primary hover:underline font-medium" target="_blank">
+              Gizlilik Politikası
+            </Link>
+            &apos;nı okudum ve kabul ediyorum.
           </span>
         </label>
+        {errors.terms && (
+          <p className="text-destructive text-xs -mt-1">{errors.terms.message}</p>
+        )}
 
         <button
           type="submit"
