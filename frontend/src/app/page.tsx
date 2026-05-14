@@ -15,7 +15,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-import { Logo, WaveW } from "@/components/wave-w-logo";
+import { Logo } from "@/components/wave-w-logo";
 
 export default function LandingPage() {
   return (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Terminal, Layers, ChevronRight } from "lucide-react";
+import { ArrowRight, Terminal, ChevronRight } from "lucide-react";
 import { Logo } from "@/components/wave-w-logo";
 
 // ── Sidebar nav structure ──────────────────────────────────
@@ -66,7 +66,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function CodeBlock({ label, lang = "bash", children }: { label?: string; lang?: string; children: string }) {
+function CodeBlock({ label, children }: { label?: string; children: string }) {
   return (
     <Card className="p-0 overflow-hidden my-4">
       {label && (
@@ -533,8 +533,8 @@ export default function DocsPage() {
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Logo />
           <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="/#features" className="hover:text-foreground transition-colors">Özellikler</a>
-            <a href="/#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</a>
+            <Link href="/#features" className="hover:text-foreground transition-colors">Özellikler</Link>
+            <Link href="/#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</Link>
             <Link href="/docs" className="text-foreground font-medium">Dokümantasyon</Link>
           </div>
           <div className="flex items-center gap-2">

@@ -8,8 +8,8 @@ export function PublicNav() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Logo />
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-          <a href="/#features" className="hover:text-foreground transition-colors">Özellikler</a>
-          <a href="/#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</a>
+          <Link href="/#features" className="hover:text-foreground transition-colors">Özellikler</Link>
+          <Link href="/#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</Link>
           <Link href="/docs" className="hover:text-foreground transition-colors">Dokümantasyon</Link>
         </div>
         <div className="flex items-center gap-2">
