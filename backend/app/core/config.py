@@ -49,6 +49,11 @@ class Settings(BaseSettings):
     # Scraper
     PLAYWRIGHT_HEADLESS: bool = True
 
+    # LangSmith observability (optional — tracing activates when API key is set)
+    LANGCHAIN_TRACING_V2: str = "false"
+    LANGCHAIN_API_KEY: str = ""
+    LANGCHAIN_PROJECT: str = "pricewise-ai"
+
     @property
     def ASYNC_DATABASE_URL(self) -> str:
         # asyncpg uses ?ssl=require; Neon connection strings ship with ?sslmode=require
