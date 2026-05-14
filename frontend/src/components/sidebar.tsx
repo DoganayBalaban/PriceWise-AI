@@ -10,11 +10,14 @@ import {
   CreditCard,
   History,
   Layout,
+  LogOut,
   Plus,
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/wave-w-logo";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
 
 const NAV_GROUPS = [
   {
@@ -39,6 +42,12 @@ const NAV_GROUPS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleSignOut() {
+    await authClient.signOut();
+    router.push("/login");
+  }
 
   return (
     <aside className="w-[240px] shrink-0 border-r border-border bg-card flex flex-col h-full">
@@ -83,18 +92,23 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-3 border-t border-border">
-        <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors">
+      <div className="p-3 border-t border-border space-y-1">
+        <div className="flex items-center gap-3 p-2 rounded-lg">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-semibold">
             D
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-medium truncate">Doğanay</div>
-            <div className="text-xs text-muted-foreground truncate">
-              Free Plan
-            </div>
+            <div className="text-xs text-muted-foreground truncate">Free Plan</div>
           </div>
         </div>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 px-3 h-9 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        >
+          <LogOut size={16} />
+          <span>Çıkış Yap</span>
+        </button>
       </div>
     </aside>
   );
