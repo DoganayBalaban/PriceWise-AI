@@ -8,15 +8,10 @@ _redis: Redis | None = None
 async def get_redis() -> Redis:
     global _redis
     if _redis is None:
-        # rediss:// (TLS) is used by Redis Cloud / Upstash — disable cert verification
-        # for self-signed certs on managed services.
-        use_ssl = settings.REDIS_URL.startswith("rediss://")
-        _redis = from_url(
-            settings.REDIS_URL,
-            encoding="utf-8",
-            decode_responses=True,
-            ssl_cert_reqs="none" if use_ssl else None,
-        )
+        kwargs: dict = {"encoding": "utf-8", "decode_responses": True}
+        if settings.REDIS_URL.startswith("rediss://"):
+            kwargs["ssl_cert_reqs"] = None
+        _redis = from_url(settings.REDIS_URL, **kwargs)
     return _redis
 
 
