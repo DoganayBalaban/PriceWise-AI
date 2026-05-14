@@ -28,7 +28,7 @@ export default function LandingPage() {
             <a href="#features" className="hover:text-foreground transition-colors">Özellikler</a>
             <a href="#how" className="hover:text-foreground transition-colors">Nasıl Çalışır</a>
             <a href="#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</a>
-            <a href="#docs" className="hover:text-foreground transition-colors">Dokümantasyon</a>
+            <Link href="/docs" className="hover:text-foreground transition-colors">Dokümantasyon</Link>
           </div>
           <div className="flex items-center gap-2">
             <Link
@@ -170,7 +170,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Docs */}
+      {/* Docs CTA */}
       <section id="docs" className="border-t border-border bg-muted/30">
         <div className="max-w-7xl mx-auto px-6 py-20">
           <div className="text-center mb-12">
@@ -180,6 +180,21 @@ export default function LandingPage() {
               Business planı ile PriceWise analiz motorunu ürününüze native şekilde bağlayın.
               Üretim kullanımı için endpoint kapsamı, örnek payload, hata kodları ve webhook akışı hazır.
             </p>
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <Link
+                href="/docs"
+                className="inline-flex items-center gap-1.5 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              >
+                Dokümantasyona Git
+                <ArrowRight size={14} />
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center h-10 px-5 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors"
+              >
+                API Anahtarı Al
+              </Link>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-4 gap-4 mb-8">
@@ -405,7 +420,7 @@ export default function LandingPage() {
               <ul className="space-y-3 text-sm text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground transition-colors">Özellikler</a></li>
                 <li><a href="#pricing" className="hover:text-foreground transition-colors">Fiyatlandırma</a></li>
-                <li><a href="#docs" className="hover:text-foreground transition-colors">API Dokümantasyonu</a></li>
+                <li><Link href="/docs" className="hover:text-foreground transition-colors">API Dokümantasyonu</Link></li>
                 <li><a href="#how" className="hover:text-foreground transition-colors">Nasıl Çalışır</a></li>
               </ul>
             </div>
@@ -414,8 +429,8 @@ export default function LandingPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">Şirket</div>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Hakkında</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Blog</a></li>
+                <li><Link href="/about" className="hover:text-foreground transition-colors">Hakkında</Link></li>
+                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
                 <li><a href="mailto:hello@pricewise.ai" className="hover:text-foreground transition-colors">İletişim</a></li>
               </ul>
             </div>
@@ -424,10 +439,10 @@ export default function LandingPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">Kaynaklar</div>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li><a href="#docs" className="hover:text-foreground transition-colors">API Referansı</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Durum Sayfası</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Yardım Merkezi</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Changelog</a></li>
+                <li><Link href="/docs" className="hover:text-foreground transition-colors">API Referansı</Link></li>
+                <li><Link href="/status" className="hover:text-foreground transition-colors">Durum Sayfası</Link></li>
+                <li><Link href="/help" className="hover:text-foreground transition-colors">Yardım Merkezi</Link></li>
+                <li><Link href="/changelog" className="hover:text-foreground transition-colors">Changelog</Link></li>
               </ul>
             </div>
 
@@ -435,10 +450,10 @@ export default function LandingPage() {
             <div>
               <div className="text-xs font-semibold uppercase tracking-wider text-foreground mb-4">Yasal</div>
               <ul className="space-y-3 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground transition-colors">Gizlilik Politikası</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Kullanım Koşulları</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">Çerez Politikası</a></li>
-                <li><a href="#" className="hover:text-foreground transition-colors">KVKK</a></li>
+                <li><Link href="/privacy" className="hover:text-foreground transition-colors">Gizlilik Politikası</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground transition-colors">Kullanım Koşulları</Link></li>
+                <li><Link href="/cookies" className="hover:text-foreground transition-colors">Çerez Politikası</Link></li>
+                <li><Link href="/kvkk" className="hover:text-foreground transition-colors">KVKK</Link></li>
               </ul>
             </div>
           </div>
