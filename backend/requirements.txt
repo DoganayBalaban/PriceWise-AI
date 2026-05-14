@@ -25,3 +25,4 @@ tiktoken>=0.7
 transformers>=4.40
 torch>=2.2
 langgraph>=0.2
+langsmith>=0.2
