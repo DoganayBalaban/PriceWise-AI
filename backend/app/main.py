@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -5,6 +6,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+
+# pydantic-settings reads .env but doesn't write to os.environ;
+# LangSmith SDK reads os.environ directly, so we bridge the gap here.
+if settings.LANGSMITH_API_KEY:
+    os.environ.setdefault("LANGSMITH_TRACING", settings.LANGSMITH_TRACING)
+    os.environ.setdefault("LANGSMITH_API_KEY", settings.LANGSMITH_API_KEY)
+    os.environ.setdefault("LANGSMITH_PROJECT", settings.LANGSMITH_PROJECT)
+    os.environ.setdefault("LANGSMITH_ENDPOINT", settings.LANGSMITH_ENDPOINT)
+
 from app.core.redis import close_redis, get_redis
 from app.routers import agent, alerts, auth, health, payments, prices, products, reviews
 from app.services.alert_service import check_price_alerts

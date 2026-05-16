@@ -769,10 +769,12 @@ function ComparisonSlider() {
       </div>
       <div className="relative rounded-2xl border border-border overflow-hidden select-none cursor-ew-resize"
            style={{ height: 480 }} onMouseMove={handleMouseMove}>
-        <div className="absolute inset-0 bg-muted p-8">
+
+        {/* Old way — full width behind */}
+        <div className="absolute inset-0 bg-muted flex flex-col p-8">
           <div className="text-xs uppercase tracking-wider font-semibold text-destructive mb-2">😩 Eski yöntem</div>
-          <div className="text-3xl font-semibold mb-8 tracking-tight">23 dakika · 3 sekme · belirsiz karar</div>
-          <div className="grid grid-cols-3 gap-3 max-w-3xl">
+          <div className="text-2xl font-semibold mb-6 tracking-tight">23 dakika · 3 sekme · belirsiz karar</div>
+          <div className="grid grid-cols-3 gap-3">
             {["Trendyol", "Hepsiburada", "n11"].map(p => (
               <div key={p} className="rounded-lg border border-border bg-background p-4">
                 <div className="text-xs text-muted-foreground">{p}</div>
@@ -783,15 +785,26 @@ function ComparisonSlider() {
               </div>
             ))}
           </div>
+          <div className="mt-6 p-4 rounded-xl border border-border bg-background max-w-xs">
+            <div className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">Karar</div>
+            <div className="text-xl font-semibold mt-1 text-muted-foreground">🤔 Bilmiyorum...</div>
+            <div className="text-[11px] text-muted-foreground mt-1">23 dakika harcadın, hâlâ emin değilsin</div>
+          </div>
         </div>
-        <div className="absolute inset-0 p-8 overflow-hidden"
-             style={{ clipPath: `polygon(0 0, ${pos}% 0, ${pos}% 100%, 0 100%)`, background: "linear-gradient(135deg, hsl(221 83% 53% / 0.04), hsl(262 83% 58% / 0.04))" }}>
+
+        {/* New way — clipped by slider */}
+        <div className="absolute inset-0 flex flex-col p-8"
+             style={{
+               clipPath: `polygon(0 0, ${pos}% 0, ${pos}% 100%, 0 100%)`,
+               background: "linear-gradient(135deg, hsl(221 83% 53% / 0.06), hsl(262 83% 58% / 0.06))",
+               backgroundColor: "hsl(var(--background))",
+             }}>
           <div className="text-xs uppercase tracking-wider font-semibold text-[hsl(var(--success))] mb-2">✨ PriceWise AI</div>
-          <div className="text-3xl font-semibold mb-8 tracking-tight">8 saniye · tek ekran · net karar</div>
-          <div className="grid grid-cols-3 gap-3 max-w-3xl">
+          <div className="text-2xl font-semibold mb-6 tracking-tight">8 saniye · tek ekran · net karar</div>
+          <div className="grid grid-cols-3 gap-3">
             {[
               { p: "Trendyol", price: 2499, tag: "7g düşüş bekleniyor", variant: "success" as const },
-              { p: "Hepsiburada", price: 2389, tag: "En ucuz · kargo dahil ₺2.438", variant: "success" as const },
+              { p: "Hepsiburada", price: 2389, tag: "En ucuz · kargo dahil", variant: "success" as const },
               { p: "n11", price: 2599, tag: "Yüksek · stokta yok", variant: "destructive" as const },
             ].map(p => (
               <div key={p.p} className="rounded-lg border border-border bg-card p-4">
@@ -801,15 +814,17 @@ function ComparisonSlider() {
               </div>
             ))}
           </div>
-          <div className="absolute bottom-8 right-8 max-w-xs p-4 rounded-xl"
+          <div className="mt-6 p-4 rounded-xl max-w-xs"
                style={{ border: "1px solid hsl(38 92% 50% / 0.3)", background: "hsl(38 92% 50% / 0.05)" }}>
             <div className="text-xs uppercase tracking-wider font-semibold" style={{ color: "hsl(38 92% 45%)" }}>AI Karar</div>
-            <div className="text-2xl font-semibold mt-1" style={{ color: "hsl(38 92% 45%)" }}>🟡 Bekle</div>
+            <div className="text-xl font-semibold mt-1" style={{ color: "hsl(38 92% 45%)" }}>🟡 Bekle</div>
             <div className="text-[11px] text-muted-foreground mt-1">~₺120 tasarruf, 7g sonra al</div>
           </div>
         </div>
+
+        {/* Slider handle */}
         <div className="absolute top-0 bottom-0 pointer-events-none" style={{ left: `${pos}%` }}>
-          <div className="absolute top-0 bottom-0 w-px bg-foreground" style={{ left: "-0.5px" }} />
+          <div className="absolute top-0 bottom-0 w-px bg-foreground/40" style={{ left: "-0.5px" }} />
           <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-foreground flex items-center justify-center text-background shadow-xl">
             <ArrowRight size={14} />
           </div>
