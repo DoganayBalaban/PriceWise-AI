@@ -50,9 +50,10 @@ class Settings(BaseSettings):
     PLAYWRIGHT_HEADLESS: bool = True
 
     # LangSmith observability (optional — tracing activates when API key is set)
-    LANGCHAIN_TRACING_V2: str = "false"
-    LANGCHAIN_API_KEY: str = ""
-    LANGCHAIN_PROJECT: str = "pricewise-ai"
+    LANGSMITH_TRACING: str = "true"
+    LANGSMITH_API_KEY: str = ""
+    LANGSMITH_PROJECT: str = "pricewise"
+    LANGSMITH_ENDPOINT: str = "https://api.smith.langchain.com"
 
     @property
     def ASYNC_DATABASE_URL(self) -> str:
