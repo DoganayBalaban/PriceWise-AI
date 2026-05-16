@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.models.analysis_history import AnalysisHistory
 
@@ -41,6 +42,7 @@ class AnalysisHistoryRepository:
         offset = (page - 1) * page_size
         result = await self.session.execute(
             select(AnalysisHistory)
+            .options(joinedload(AnalysisHistory.product))
             .where(AnalysisHistory.user_id == user_id)
             .order_by(AnalysisHistory.created_at.desc())
             .offset(offset)
