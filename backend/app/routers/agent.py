@@ -68,8 +68,10 @@ async def list_sessions(
         {
             "id": str(s.id),
             "product_id": str(s.product_id),
+            "product_name": s.product.name if s.product else None,
             "query": s.query,
             "created_at": s.created_at.isoformat(),
+            "tokens_used": s.tokens_used,
             "result": s.result,
         }
         for s in sessions

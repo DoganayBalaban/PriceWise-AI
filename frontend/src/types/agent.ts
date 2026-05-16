@@ -14,7 +14,9 @@ export interface AgentDecisionResult {
 export interface AgentSession {
   id: string;
   product_id: string;
+  product_name: string | null;
   query: string;
   created_at: string;
+  tokens_used: number | null;
   result: AgentDecisionResult;
 }
