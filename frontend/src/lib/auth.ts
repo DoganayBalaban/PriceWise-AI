@@ -8,7 +8,9 @@ export const auth = betterAuth({
     pool: new Pool({ connectionString: process.env.DATABASE_URL }),
   }),
   secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  baseURL:
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000"),
   emailAndPassword: {
     enabled: true,
   },

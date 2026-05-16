@@ -49,7 +49,8 @@ function LoginForm() {
   }
 
   async function handleGoogle() {
-    await authClient.signIn.social({ provider: "google", callbackURL: "/dashboard" });
+    const callbackURL = `${window.location.origin}/dashboard`;
+    await authClient.signIn.social({ provider: "google", callbackURL });
   }
 
   return (
