@@ -191,7 +191,9 @@ class TrendyolScraper(BaseScraper):
                     reviews.extend(page_reviews)
                     logger.info(
                         "Trendyol reviews page %d: +%d (total %d)",
-                        page_num, len(page_reviews), len(reviews),
+                        page_num,
+                        len(page_reviews),
+                        len(reviews),
                     )
                     page_num += 1
 
