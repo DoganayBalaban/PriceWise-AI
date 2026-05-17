@@ -16,6 +16,13 @@ export function proxy(req: NextRequest) {
 
   const isLoggedIn = !!sessionCookie;
 
+  // OAuth hata parametresi → login'e yönlendir
+  if (pathname === "/" && req.nextUrl.searchParams.has("error")) {
+    const loginUrl = new URL("/login", req.url);
+    loginUrl.searchParams.set("error", req.nextUrl.searchParams.get("error")!);
+    return NextResponse.redirect(loginUrl);
+  }
+
   // Giriş yapılmışsa login/register/landing'e gitmesin → dashboard
   if (isLoggedIn && (pathname === "/" || authOnlyPaths.some((p) => pathname.startsWith(p)))) {
     return NextResponse.redirect(new URL("/dashboard", req.url));

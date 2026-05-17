@@ -31,6 +31,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") ?? "/dashboard";
+  const oauthError = searchParams.get("error");
 
   const {
     register,
@@ -55,6 +56,11 @@ function LoginForm() {
 
   return (
     <AuthShell title="Tekrar hoş geldin" subtitle="Hesabına giriş yap ve analizlere devam et.">
+      {oauthError && (
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          Google ile giriş başarısız oldu. Lütfen tekrar dene veya e-posta ile giriş yap.
+        </div>
+      )}
       <button
         type="button"
         onClick={handleGoogle}
