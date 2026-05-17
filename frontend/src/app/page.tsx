@@ -11,6 +11,7 @@ import {
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
+import { Logo } from "@/components/wave-w-logo";
 
 // ── Helpers ─────────────────────────────────────────────
 function cx(...args: (string | boolean | undefined | null)[]) {
@@ -101,30 +102,12 @@ function Counter({ to, suffix = "", decimals = 0 }: { to: number; suffix?: strin
   );
 }
 
-// ── Logo ──────────────────────────────────────────────────
-function Logo() {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="w-7 h-7 rounded-lg flex items-center justify-center text-white"
-           style={{ background: "linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 58%))" }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <polyline points="3 17 9 11 13 15 21 7" />
-          <polyline points="14 7 21 7 21 14" />
-        </svg>
-      </div>
-      <span className="font-semibold tracking-tight text-[15px]">
-        PriceWise<span className="text-primary"> AI</span>
-      </span>
-    </div>
-  );
-}
-
 // ── Nav ───────────────────────────────────────────────────
 function Nav() {
   return (
     <nav className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Logo />
+        <Logo size={26} />
         <div className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
           <a href="#features" className="hover:text-foreground transition-colors">Özellikler</a>
           <a href="#how" className="hover:text-foreground transition-colors">Nasıl Çalışır</a>
