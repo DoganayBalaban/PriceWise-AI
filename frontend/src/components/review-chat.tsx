@@ -37,10 +37,13 @@ async function getJwt(): Promise<string | null> {
 
 const POLL_INTERVAL = 5_000;
 const POLL_TIMEOUT = 3 * 60 * 1000;
+// If total is still 0 after this long, assume scraping failed
+const SCRAPE_FAIL_TIMEOUT = 90 * 1000;
 
 export function ReviewChat({ productId }: { productId: string }) {
   const queryClient = useQueryClient();
   const pollStartRef = useRef<number | null>(null);
+  const [retrying, setRetrying] = useState(false);
 
   const { data: status, isLoading: statusLoading } = useQuery({
     queryKey: queryKeys.reviews.status(productId),
@@ -54,6 +57,33 @@ export function ReviewChat({ productId }: { productId: string }) {
       return POLL_INTERVAL;
     },
   });
+
+  // How long we've been polling (for "failed" detection)
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (status?.rag_ready || status?.total) return;
+    const timer = setInterval(() => {
+      setElapsed(pollStartRef.current ? Date.now() - pollStartRef.current : 0);
+    }, 5_000);
+    return () => clearInterval(timer);
+  }, [status?.rag_ready, status?.total]);
+
+  const scrapeFailed = !status?.total && elapsed > SCRAPE_FAIL_TIMEOUT;
+
+  async function handleRetry() {
+    setRetrying(true);
+    try {
+      await api.reviews.triggerScrape(productId);
+      pollStartRef.current = Date.now();
+      setElapsed(0);
+      toast.success("Yorumlar yeniden çekiliyor…");
+      queryClient.invalidateQueries({ queryKey: queryKeys.reviews.status(productId) });
+    } catch {
+      toast.error("Yeniden başlatılamadı, lütfen tekrar dene.");
+    } finally {
+      setRetrying(false);
+    }
+  }
 
   const prevRagReady = useRef<boolean | undefined>(undefined);
   useEffect(() => {
@@ -154,24 +184,74 @@ export function ReviewChat({ productId }: { productId: string }) {
 
   if (statusLoading) return null;
 
-  if (!status || status.total === 0 || !status.rag_ready) {
-    const label = !status || status.total === 0
-      ? "Yorumlar çekiliyor…"
-      : `${status.total} yorum bulundu, AI indeksi hazırlanıyor… (${status.embedded}/${status.total})`;
+  if (!status?.rag_ready) {
+    const hasReviews = (status?.total ?? 0) > 0;
+    const pct = hasReviews ? Math.round(((status?.embedded ?? 0) / status!.total) * 100) : 0;
 
     return (
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Yorumlara Sor
           </h3>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <span className="w-3 h-3 border-2 border-border border-t-primary rounded-full animate-spin" />
-            Hazırlanıyor
-          </span>
+          {scrapeFailed ? (
+            <span className="text-xs text-destructive font-medium">Bağlanamadı</span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span className="w-3 h-3 border-2 border-border border-t-primary rounded-full animate-spin" />
+              Hazırlanıyor
+            </span>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground/60 mt-1">Sayfa açık kaldığı sürece otomatik güncellenecek.</p>
+
+        {scrapeFailed ? (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center text-xl">⚠️</div>
+            <p className="text-sm font-medium">Yorumlar çekilemedi</p>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              Bu platform için yorumlar otomatik olarak alınamadı. Yeniden deneyebilirsin.
+            </p>
+            <button
+              onClick={handleRetry}
+              disabled={retrying}
+              className="mt-1 h-8 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+            >
+              {retrying && <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />}
+              Yeniden Dene
+            </button>
+          </div>
+        ) : hasReviews ? (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">
+                {status!.embedded}/{status!.total} yorum AI indeksine eklendi
+              </span>
+              <span className="font-semibold text-foreground">{pct}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-500"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground/60">
+              Tüm yorumlar indekslendiğinde soru sorabileceksin.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Yorumlar çekiliyor…</span>
+              <span className="font-semibold text-foreground">0%</span>
+            </div>
+            <div className="h-2 rounded-full bg-muted overflow-hidden">
+              <div className="h-full w-1/3 rounded-full bg-primary/40 animate-pulse" />
+            </div>
+            <p className="text-xs text-muted-foreground/60">
+              Sayfa açık kaldığı sürece otomatik güncellenecek.
+            </p>
+          </div>
+        )}
       </Card>
     );
   }

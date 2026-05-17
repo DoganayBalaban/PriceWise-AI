@@ -160,6 +160,8 @@ class N11Scraper(BaseScraper):
                 page = await ctx.new_page()
 
                 page_num = 1
+                seen_contents: set[str] = set()
+
                 while len(reviews) < max_reviews and page_num <= 10:
                     await page.goto(
                         self._reviews_url(url, page_num),
@@ -189,8 +191,9 @@ class N11Scraper(BaseScraper):
                         break
 
                     count = await items.count()
+                    page_reviews: list[ScrapedReview] = []
                     for i in range(count):
-                        if len(reviews) >= max_reviews:
+                        if len(reviews) + len(page_reviews) >= max_reviews:
                             break
                         item = items.nth(i)
                         item_html = await item.inner_html()
@@ -207,7 +210,7 @@ class N11Scraper(BaseScraper):
                                 content = (await el.inner_text()).strip()
                                 if content:
                                     break
-                        if not content:
+                        if not content or content in seen_contents:
                             continue
 
                         rating = self._parse_rating(item_html)
@@ -227,7 +230,8 @@ class N11Scraper(BaseScraper):
                                     review_date = self._parse_date(date_text)
                                     break
 
-                        reviews.append(
+                        seen_contents.add(content)
+                        page_reviews.append(
                             ScrapedReview(
                                 content=content,
                                 rating=rating,
@@ -235,6 +239,10 @@ class N11Scraper(BaseScraper):
                             )
                         )
 
+                    if not page_reviews:
+                        break
+
+                    reviews.extend(page_reviews)
                     page_num += 1
 
             finally:

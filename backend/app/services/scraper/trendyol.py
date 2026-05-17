@@ -119,16 +119,14 @@ class TrendyolScraper(BaseScraper):
                 page = await ctx.new_page()
 
                 page_num = 1
+                seen_contents: set[str] = set()
+
                 while len(reviews) < max_reviews and page_num <= 10:
-                    paginated_url = (
-                        f"{reviews_url}?sayfa={page_num}"
-                        if page_num > 1
-                        else reviews_url
-                    )
+                    paginated_url = f"{reviews_url}?sayfa={page_num}"
                     await page.goto(
                         paginated_url, wait_until="domcontentloaded", timeout=25_000
                     )
-                    await page.wait_for_timeout(3000)
+                    await page.wait_for_timeout(3500)
 
                     # Scroll to trigger lazy-loaded reviews
                     await page.evaluate(
@@ -141,8 +139,9 @@ class TrendyolScraper(BaseScraper):
                     if count == 0:
                         break
 
+                    page_reviews: list[ScrapedReview] = []
                     for i in range(count):
-                        if len(reviews) >= max_reviews:
+                        if len(reviews) + len(page_reviews) >= max_reviews:
                             break
                         item = items.nth(i)
 
@@ -154,7 +153,7 @@ class TrendyolScraper(BaseScraper):
                                 content = (await text_el.inner_text()).strip()
                         except Exception:
                             pass
-                        if not content:
+                        if not content or content in seen_contents:
                             continue
 
                         # Trendyol uses CSS-only star rendering — not extractable from DOM
@@ -172,7 +171,8 @@ class TrendyolScraper(BaseScraper):
                         except Exception:
                             pass
 
-                        reviews.append(
+                        seen_contents.add(content)
+                        page_reviews.append(
                             ScrapedReview(
                                 content=content,
                                 rating=rating,
@@ -180,6 +180,21 @@ class TrendyolScraper(BaseScraper):
                             )
                         )
 
+                    # No new unique reviews → we've hit a duplicate page, stop
+                    if not page_reviews:
+                        logger.info(
+                            "Trendyol review pagination stopped at page %d (no new reviews)",
+                            page_num,
+                        )
+                        break
+
+                    reviews.extend(page_reviews)
+                    logger.info(
+                        "Trendyol reviews page %d: +%d (total %d)",
+                        page_num,
+                        len(page_reviews),
+                        len(reviews),
+                    )
                     page_num += 1
 
             finally:
