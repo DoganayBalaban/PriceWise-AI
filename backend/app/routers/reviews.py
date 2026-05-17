@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 from typing import AsyncGenerator
 
@@ -23,6 +24,8 @@ from app.services.sentiment_service import (
     SentimentNotReadyError,
     get_or_compute_sentiment,
 )
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
