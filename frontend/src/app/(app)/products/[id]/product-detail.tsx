@@ -1,13 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Bell,
   Bot,
   Box,
   Brain,
-  ChevronRight,
   ExternalLink,
   Layers,
   MessageSquare,
@@ -42,6 +41,16 @@ const PLATFORM_COLORS: Record<string, { bg: string; text: string; label: string 
   n11:         { bg: "hsl(295 70% 95%)",  text: "hsl(295 70% 40%)",  label: "n11"         },
 };
 
+type Tab = "genel" | "yorumlar" | "ozet" | "karar" | "karsilastirma";
+
+const TABS: { id: Tab; label: string; icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
+  { id: "genel",          label: "Genel Bakış",       icon: Brain },
+  { id: "yorumlar",       label: "Yorumlara Sor",     icon: MessageSquare },
+  { id: "ozet",           label: "Yorum Özeti",       icon: Sparkles },
+  { id: "karar",          label: "Karar Agent'ı",     icon: Bot },
+  { id: "karsilastirma",  label: "Karşılaştırma",     icon: Layers },
+];
+
 function PlatformBadge({ platform }: { platform: string }) {
   const p = PLATFORM_COLORS[platform] ?? {
     bg: "hsl(var(--muted))",
@@ -60,8 +69,8 @@ function PlatformBadge({ platform }: { platform: string }) {
 
 function ProductThumb({ name, imageUrl, size = 96 }: { name: string; imageUrl?: string | null; size?: number }) {
   if (imageUrl) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={imageUrl}
         alt=""
@@ -175,6 +184,8 @@ interface ProductDetailProps {
 
 export function ProductDetail({ id }: ProductDetailProps) {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>("genel");
+
   const { data, isLoading, isError, error } = useProduct(id);
   const { data: stats, isLoading: statsLoading } = usePriceStats(id, 30);
   const { data: forecast7, isLoading: forecastLoading } = useForecast(id, 7);
@@ -193,6 +204,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
             <Skeleton className="h-4 w-52" />
           </div>
         </div>
+        <Skeleton className="h-10 w-full rounded-lg" />
         <div className="grid grid-cols-3 gap-6">
           <div className="col-span-2 space-y-4">
             <div className="grid grid-cols-4 gap-3">
@@ -204,7 +216,6 @@ export function ProductDetail({ id }: ProductDetailProps) {
           <div className="space-y-4">
             <Skeleton className="h-56 rounded-xl" />
             <Skeleton className="h-44 rounded-xl" />
-            <Skeleton className="h-32 rounded-xl" />
           </div>
         </div>
       </div>
@@ -224,6 +235,7 @@ export function ProductDetail({ id }: ProductDetailProps) {
   if (!data) return null;
 
   const price = data.latest_price;
+  const discountPct = price?.discount_pct;
 
   function handleRefresh() {
     refreshProduct(id, {
@@ -241,8 +253,6 @@ export function ProductDetail({ id }: ProductDetailProps) {
       onError: (err: Error) => toast.error(err.message),
     });
   }
-
-  const discountPct = price?.discount_pct;
 
   return (
     <div className="p-8 max-w-7xl mx-auto fade-in">
@@ -317,97 +327,102 @@ export function ProductDetail({ id }: ProductDetailProps) {
         </div>
       </div>
 
-      {/* ── Main grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Tab bar ── */}
+      <div className="border-b border-border mb-6">
+        <nav className="flex gap-1 -mb-px">
+          {TABS.map(({ id: tabId, label, icon: Icon }) => (
+            <button
+              key={tabId}
+              onClick={() => setActiveTab(tabId)}
+              className={`
+                flex items-center gap-2 px-4 h-10 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+                ${activeTab === tabId
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                }
+              `}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-        {/* Left col */}
-        <div className="lg:col-span-2 space-y-5">
+      {/* ── Tab content ── */}
 
-          {/* Stats row */}
-          <div className="grid grid-cols-4 gap-3">
-            <MicroStat
-              label="Mevcut"
-              value={price ? fmt.format(price.price) : "—"}
-              sub={discountPct ? `%${discountPct.toFixed(0)} indirimli` : undefined}
-              tone={discountPct ? "success" : undefined}
-            />
-            <MicroStat
-              label="30g ort."
-              value={stats?.avg_price != null ? fmt.format(stats.avg_price) : "—"}
-              loading={statsLoading}
-            />
-            <MicroStat
-              label="En düşük"
-              value={stats?.min_price != null ? fmt.format(stats.min_price) : "—"}
-              loading={statsLoading}
-            />
-            <MicroStat
-              label="7g tahmin"
-              value={forecast7?.predicted_final_price != null ? fmt.format(forecast7.predicted_final_price) : "—"}
-              sub={
-                forecast7 && price
-                  ? `${forecast7.predicted_final_price < price.price ? "−" : "+"}${fmt.format(Math.abs(forecast7.predicted_final_price - price.price))}`
-                  : undefined
-              }
-              tone={forecast7 && price && forecast7.predicted_final_price < price.price ? "success" : undefined}
-              loading={forecastLoading}
-            />
+      {/* Genel Bakış */}
+      {activeTab === "genel" && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left col */}
+          <div className="lg:col-span-2 space-y-5">
+            {/* Stats row */}
+            <div className="grid grid-cols-4 gap-3">
+              <MicroStat
+                label="Mevcut"
+                value={price ? fmt.format(price.price) : "—"}
+                sub={discountPct ? `%${discountPct.toFixed(0)} indirimli` : undefined}
+                tone={discountPct ? "success" : undefined}
+              />
+              <MicroStat
+                label="30g ort."
+                value={stats?.avg_price != null ? fmt.format(stats.avg_price) : "—"}
+                loading={statsLoading}
+              />
+              <MicroStat
+                label="En düşük"
+                value={stats?.min_price != null ? fmt.format(stats.min_price) : "—"}
+                loading={statsLoading}
+              />
+              <MicroStat
+                label="7g tahmin"
+                value={forecast7?.predicted_final_price != null ? fmt.format(forecast7.predicted_final_price) : "—"}
+                sub={
+                  forecast7 && price
+                    ? `${forecast7.predicted_final_price < price.price ? "−" : "+"}${fmt.format(Math.abs(forecast7.predicted_final_price - price.price))}`
+                    : undefined
+                }
+                tone={forecast7 && price && forecast7.predicted_final_price < price.price ? "success" : undefined}
+                loading={forecastLoading}
+              />
+            </div>
+
+            {/* Price chart */}
+            <PriceChart productId={id} />
+
+            {/* Model insight */}
+            <ModelInsightCard productId={id} />
           </div>
 
-          {/* Price chart */}
-          <PriceChart productId={id} />
-
-          {/* Model insight */}
-          <ModelInsightCard productId={id} />
-        </div>
-
-        {/* Right col */}
-        <div className="space-y-4">
-
-          {/* Decision card */}
-          <div id="decision">
+          {/* Right col */}
+          <div className="space-y-4">
             <DecisionCard productId={id} />
-          </div>
-
-          {/* Sentiment */}
-          <div id="sentiment">
             <SentimentCard productId={id} />
           </div>
+        </div>
+      )}
 
-          {/* Quick actions */}
-          <Card className="p-2">
-            {[
-              { icon: MessageSquare, label: "Yorumlara sor",       href: "#chat" },
-              { icon: Sparkles,      label: "AI yorum özeti",      href: "#summary" },
-              { icon: Layers,        label: "Platform karşılaştır", href: "#compare" },
-              { icon: Bot,           label: "Karar agent'ı",        href: "#decision" },
-            ].map(({ icon: Icon, label, href }) => (
-              <a
-                key={label}
-                href={href}
-                className="w-full flex items-center gap-3 px-3 h-10 rounded-md hover:bg-muted text-sm transition-colors"
-              >
-                <Icon size={14} className="text-primary shrink-0" />
-                <span className="flex-1">{label}</span>
-                <ChevronRight size={14} className="text-muted-foreground" />
-              </a>
-            ))}
-          </Card>
-        </div>
-      </div>
+      {/* Yorumlara Sor */}
+      {activeTab === "yorumlar" && (
+        <ReviewChat productId={id} />
+      )}
 
-      {/* ── Full-width sections ── */}
-      <div className="mt-6 space-y-6">
-        <div id="compare">
-          <CompareCard productId={id} />
+      {/* Yorum Özeti */}
+      {activeTab === "ozet" && (
+        <SummaryCard productId={id} />
+      )}
+
+      {/* Karar Agent'ı */}
+      {activeTab === "karar" && (
+        <div className="max-w-2xl">
+          <DecisionCard productId={id} />
         </div>
-        <div id="summary">
-          <SummaryCard productId={id} />
-        </div>
-        <div id="chat">
-          <ReviewChat productId={id} />
-        </div>
-      </div>
+      )}
+
+      {/* Karşılaştırma */}
+      {activeTab === "karsilastirma" && (
+        <CompareCard productId={id} />
+      )}
     </div>
   );
 }

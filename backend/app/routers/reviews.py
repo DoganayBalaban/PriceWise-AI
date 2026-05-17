@@ -2,7 +2,7 @@ import json
 import uuid
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,7 @@ from app.models.user import User
 from app.repositories.review_repository import ReviewRepository
 from app.repositories.product_repository import ProductRepository
 from app.services.embedding_service import query_similar_chunks
+from app.services.review_service import scrape_and_save_reviews
 from app.services.review_summary_service import (
     ReviewSummaryError,
     get_or_generate_summary,
@@ -81,6 +82,37 @@ async def get_sentiment(
         )
 
 
+@router.post("/{product_id}/analyze-sentiment")
+async def trigger_sentiment_analysis(
+    product_id: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Re-run sentiment analysis for existing reviews (e.g. if it was skipped or failed)."""
+    from app.services.sentiment_service import (
+        analyze_reviews_for_product,
+        compute_and_cache_sentiment,
+    )
+
+    pid = _parse_uuid(product_id)
+    product_repo = ProductRepository(db)
+    if not await product_repo.is_tracked_by_user(pid, current_user.id):
+        raise HTTPException(status_code=403, detail="Bu ürün takip listenizde değil")
+
+    async def _run() -> None:
+        try:
+            classified = await analyze_reviews_for_product(pid)
+            if classified > 0:
+                redis = await get_redis()
+                await compute_and_cache_sentiment(pid, redis)
+        except Exception as exc:
+            logger.warning("Sentiment re-analysis failed for %s: %s", pid, exc)
+
+    background_tasks.add_task(_run)
+    return {"status": "started"}
+
+
 @router.get("/{product_id}/summary")
 async def get_review_summary(
     product_id: str,
@@ -99,6 +131,31 @@ async def get_review_summary(
         raise HTTPException(
             status_code=503, detail="Özet oluşturulamadı, lütfen tekrar deneyin."
         )
+
+
+@router.post("/{product_id}/scrape")
+async def trigger_review_scrape(
+    product_id: str,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict:
+    """Re-trigger review scraping for a product (e.g. if initial scrape failed)."""
+    pid = _parse_uuid(product_id)
+    product_repo = ProductRepository(db)
+    product = await product_repo.get_by_id(pid)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Product not found")
+    if not await product_repo.is_tracked_by_user(pid, current_user.id):
+        raise HTTPException(status_code=403, detail="Bu ürün takip listenizde değil")
+
+    background_tasks.add_task(
+        scrape_and_save_reviews,
+        product_id=product.id,
+        url=product.url,
+        platform=product.platform,
+    )
+    return {"status": "started"}
 
 
 @router.post("/{product_id}/ask")

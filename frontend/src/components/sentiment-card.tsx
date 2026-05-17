@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -9,7 +10,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { toast } from "sonner";
 import { useSentiment } from "@/hooks/use-sentiment";
+import { useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/query-keys";
 import { Card } from "@/components/ui/card";
 
 interface SentimentCardProps {
@@ -43,12 +48,56 @@ function DistBar({ label, pct, color }: { label: string; pct: number; color: str
 }
 
 export function SentimentCard({ productId }: SentimentCardProps) {
-  const { data, isLoading, isError, error } = useSentiment(productId);
+  const { data, isLoading, isError, error, refetch } = useSentiment(productId);
+  const queryClient = useQueryClient();
+  const [analyzing, setAnalyzing] = useState(false);
 
   const isNotReady =
     isError && (error as Error).message?.includes("henüz hazır değil");
 
-  if (isNotReady) return null;
+  async function handleAnalyze() {
+    setAnalyzing(true);
+    try {
+      await api.reviews.triggerSentimentAnalysis(productId);
+      toast.success("Analiz başlatıldı, birkaç dakika içinde hazır olacak.");
+      // Poll until data arrives
+      const poll = setInterval(async () => {
+        const result = await refetch();
+        if (result.data) clearInterval(poll);
+      }, 8_000);
+      setTimeout(() => {
+        clearInterval(poll);
+        queryClient.invalidateQueries({ queryKey: queryKeys.reviews.sentiment(productId) });
+      }, 3 * 60 * 1000);
+    } catch {
+      toast.error("Analiz başlatılamadı.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  if (isNotReady) {
+    return (
+      <Card className="p-6">
+        <h2 className="text-base font-semibold mb-4">Duygu Analizi</h2>
+        <div className="flex flex-col items-center gap-3 py-4 text-center">
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xl">🧠</div>
+          <p className="text-sm font-medium">Analiz henüz yapılmadı</p>
+          <p className="text-xs text-muted-foreground max-w-xs">
+            Bu ürünün yorumları henüz duygu analizinden geçmemiş. Şimdi başlatabilirsin.
+          </p>
+          <button
+            onClick={handleAnalyze}
+            disabled={analyzing}
+            className="mt-1 h-8 px-4 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {analyzing && <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />}
+            {analyzing ? "Analiz ediliyor…" : "Analizi Başlat"}
+          </button>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 space-y-5">

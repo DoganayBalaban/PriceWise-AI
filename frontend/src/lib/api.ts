@@ -127,6 +127,14 @@ export const api = {
       apiClient
         .get<SentimentResponse>(`/api/reviews/${productId}/sentiment`)
         .then((r) => r.data),
+    triggerScrape: (productId: string) =>
+      apiClient
+        .post<{ status: string }>(`/api/reviews/${productId}/scrape`)
+        .then((r) => r.data),
+    triggerSentimentAnalysis: (productId: string) =>
+      apiClient
+        .post<{ status: string }>(`/api/reviews/${productId}/analyze-sentiment`)
+        .then((r) => r.data),
   },
   agent: {
     getSessions: (page = 1) =>

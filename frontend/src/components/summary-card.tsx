@@ -2,7 +2,6 @@
 
 import { useReviewSummary } from "@/hooks/use-review-summary";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 
 interface SummaryCardProps {
   productId: string;
@@ -26,8 +25,6 @@ export function SummaryCard({ productId }: SummaryCardProps) {
   const isInsufficient =
     isError && (error as Error).message?.includes("en az 10 yorum");
 
-  if (isInsufficient) return null;
-
   return (
     <Card className="p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -42,6 +39,17 @@ export function SummaryCard({ productId }: SummaryCardProps) {
       {isLoading && (
         <div className="h-40 flex items-center justify-center">
           <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+        </div>
+      )}
+
+      {isInsufficient && (
+        <div className="py-12 flex flex-col items-center gap-3 text-center">
+          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xl">💬</div>
+          <p className="text-sm font-medium">Henüz yeterli yorum yok</p>
+          <p className="text-xs text-muted-foreground max-w-xs">
+            AI özeti oluşturabilmek için en az 10 müşteri yorumu gerekiyor.
+            Daha fazla yorum toplandıkça bu alan otomatik olarak güncellenir.
+          </p>
         </div>
       )}
 
